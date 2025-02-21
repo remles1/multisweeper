@@ -1,0 +1,29 @@
+body {
+    background-color: #121212;
+    color: #ffffff;
+}
+.table-dark {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.table th, .table td {
+    border: none;
+}
+.btn-join {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: background-color 0.3s ease;
+}
+.btn-join:hover {
+    background-color: #45a049;
+}
+.container {
+    max-width: 800px;
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}

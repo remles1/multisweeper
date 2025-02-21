@@ -1,0 +1,4 @@
+.idea/
+**/migrations/
+*.pyc
+every_file_cat_command.txt
