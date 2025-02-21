@@ -21,9 +21,81 @@ body {
     background-color: #45a049;
 }
 .container {
-    max-width: 800px;
-    background-color: #1e1e1e;
+    max-width: 1000px;
+    /*background-color: #1e1e1e;*/
+    padding: 20px;
+    /*border-radius: 15px;*/
+    /*box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);*/
+}
+/* Apply a slightly lighter dark theme to the form */
+form {
+    background-color: #1e1e1e; /* Different from #1e1e1e to stand out */
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+p {
+    margin: 10px 0 10px 0; /* Reduce margin to minimize spacing */
+    padding: 0; /* Remove padding */
+    text-align: center;
+}
+
+form p {
+    margin: 0 0 10px 0; /* Reduce margin to minimize spacing */
+    padding: 0; /* Remove padding */
+    color: #b0b0b0; /* Use a lighter gray to de-emphasize */
+    font-size: 14px; /* Slightly smaller font size */
+    text-align: left;
+}
+
+/* Style labels */
+form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Style text, password, and email inputs */
+form input[type="text"],
+form input[type="password"],
+form input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #3a3a3a; /* Slightly lighter than form background */
+    color: #ffffff;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+/* Add focus effect to inputs */
+form input[type="text"]:focus,
+form input[type="password"]:focus,
+form input[type="email"]:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+/* Style the submit button */
+form input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+/* Add hover effect to the submit button */
+form input[type="submit"]:hover {
+    background-color: #45a049;
 }

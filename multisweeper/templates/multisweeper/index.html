@@ -2,6 +2,12 @@
 {% load i18n %}
 
 {% block content %}
+{% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}!</p>
+{% else %}
+    <p>Welcome, Guest!</p>
+{% endif %}
+
 <h2 class="text-center mb-4">Lobbies</h2>
 <div class="table-responsive">
     <table class="table table-dark table-striped">
