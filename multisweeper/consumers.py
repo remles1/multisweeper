@@ -1,27 +1,36 @@
 import json
 
 from channels.generic.websocket import WebsocketConsumer
+from django.contrib.auth.models import User
 
 from multisweeper.game.lobby import Lobby, lobbies
 
 
 class PlayerConsumer(WebsocketConsumer):
+    player: User
     lobby: Lobby
 
     def connect(self):
+        self.player = self.scope["user"]
         lobby_id = self.scope['url_route']['kwargs']['lobby_id']
-        print(lobby_id)
+
         self.join_lobby(lobby_id)
 
         self.accept()
 
-        self.send_user_board()
+        self.lobby.broadcast()
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
 
-        if text_data_json["type"] == "open":
-            print("open works")
+        message = text_data_json["message"]
+        split_message = message.split('-')
+        y = int(split_message[0])
+        x = int(split_message[1])
+
+        if text_data_json["type"] == "l_click":
+            self.lobby.left_click_game(y, x, self)
+        self.lobby.broadcast()
 
     def send_user_board(self):
         user_board_json = json.dumps(self.lobby.game_instance.user_board)
@@ -35,8 +44,8 @@ class PlayerConsumer(WebsocketConsumer):
         )
 
     def disconnect(self, close_code):
-        print(lobbies)
+        self.lobby.remove_player(self)
 
     def join_lobby(self, lobby_id):
-
         self.lobby = lobbies[lobby_id]
+        self.lobby.add_player(player=self)
