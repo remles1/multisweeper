@@ -1,6 +1,129 @@
 {% extends "base.html" %}
 {% load i18n %}
 
+{% block headblock %}
+        {% load static %}
+        <link rel="preload" href="{% static 'multisweeper/images/cell-0.svg'%}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-1.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-2.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-3.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-4.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-5.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-6.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-7.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-8.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-closed.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-flagged.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-flagged-wrong.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-mine.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/cell-mine-exploded.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-0.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-1.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-2.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-3.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-4.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-5.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-6.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-7.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-8.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d-9.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/d--.svg' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/face-happy.png' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/face-pressed.png' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/face-sad.png' %}" as="image">
+        <link rel="preload" href="{% static 'multisweeper/images/face-unpressed.png' %}" as="image">
+
+    <style>
+        :root {
+            --board-width: 16;
+            --board-height: 16;
+            --cell-width: 24px;
+            --d-background: url("{% static 'multisweeper/images/d-background.svg' %}");
+            --d--: url("{% static 'multisweeper/images/d--.svg' %}");
+            --d-0: url("{% static 'multisweeper/images/d-0.svg' %}");
+            --d-1: url("{% static 'multisweeper/images/d-1.svg' %}");
+            --d-2: url("{% static 'multisweeper/images/d-2.svg' %}");
+            --d-3: url("{% static 'multisweeper/images/d-3.svg' %}");
+            --d-4: url("{% static 'multisweeper/images/d-4.svg' %}");
+            --d-5: url("{% static 'multisweeper/images/d-5.svg' %}");
+            --d-6: url("{% static 'multisweeper/images/d-6.svg' %}");
+            --d-7: url("{% static 'multisweeper/images/d-7.svg' %}");
+            --d-8: url("{% static 'multisweeper/images/d-8.svg' %}");
+            --d-9: url("{% static 'multisweeper/images/d-9.svg' %}");
+            --border-hor-image: url("{% static 'multisweeper/images/border-hor.png' %}");
+            --border-vert-image: url("{% static 'multisweeper/images/border-vert.png' %}");
+            --corner-top-left-image: url("{% static 'multisweeper/images/corner-top-left.png' %}");
+            --corner-top-right-image: url("{% static 'multisweeper/images/corner-top-right.png' %}");
+            --t-left-image: url("{% static 'multisweeper/images/t-left.png' %}");
+            --t-right-image: url("{% static 'multisweeper/images/t-right.png' %}");
+            --corner-bottom-left-image: url("{% static 'multisweeper/images/corner-bottom-left.png' %}");
+            --corner-bottom-right-image: url("{% static 'multisweeper/images/corner-bottom-right.png' %}");
+        }
+
+    </style>
+    <link rel="stylesheet" href="{% static 'multisweeper/css/gamestyle.css' %}">
+{% endblock %}
+
+
 {% block content %}
+
+<div id="game-container" class="game-container ">
+    <div id="game-and-stats">
+        <div id="game">
+            <div class="top_part">
+                <div class="border_corners">
+                    <div class="corner_top_left"></div><div class="border_hor"></div><div class="corner_top_right"></div>
+                </div>
+                <div class="border_corners">
+                    <div class="border_vert"></div>
+                        <div class="panel">
+                            <div id="mine_counter" class="counter">
+                                <div class="digits">
+                                    <div id="mlc_d0" class="digit"></div><div id="mlc_d1" class="digit"></div><div id="mlc_d2" class="digit"></div>
+                                </div>
+                            </div>
+                            <button id="new-game-button" class="face-button face-neutral"></button>
+                            <div id="seconds_counter" class="counter">
+                                <div class="digits">
+                                    <div id="sc_d0" class="digit"></div><div id="sc_d1" class="digit"></div><div id="sc_d2" class="digitS"></div>
+                                </div>
+                            </div>
+                        </div>
+                    <div class="border_vert"></div>
+                </div>
+            </div>
+            <div class="border_corners">
+                <div class="t_left"></div><div class="border_hor"></div><div class="t_right"></div>
+            </div>
+            <div class="border_corners">
+                <div class="border_vert"></div>
+                <div id="board">
+
+                </div>
+                <div class="border_vert"></div>
+            </div>
+            <div class="border_corners">
+                <div class="corner_bottom_left"></div><div class="border_hor"></div><div class="corner_bottom_right"></div>
+            </div>
+
+        </div>
+
+        <div id="stats" class="stats" style="display: none;"></div>
+    </div>
+
+
+</div>
+
+
+
+{% endblock %}
+
+{% block scriptblock %}
+<script>
+    const lobby_id = "{{ lobby_id }}";
+    const mine_count = 30;
+</script>
+
+<script src="{% static 'multisweeper/js/game.js' %}"></script>
 
 {% endblock %}
