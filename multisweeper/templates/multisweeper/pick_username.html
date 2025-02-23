@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+    <h1>Pick your guest username</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+<!--        <input type="hidden" name="next" value="{{ next_url }}">-->
+        <button type="submit">Submit</button>
+    </form>
+
+{% endblock %}

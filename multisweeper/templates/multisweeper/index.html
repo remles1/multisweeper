@@ -5,7 +5,11 @@
 {% if user.is_authenticated %}
     <p>Welcome, {{ user.username }}!</p>
 {% else %}
-    <p>Welcome, Guest!</p>
+    {% if request.session.username %}
+        <p>Welcome, {{ request.session.username }}!</p>
+    {% else %}
+        <p>Welcome, Guest!</p>
+    {% endif %}
 {% endif %}
 
 <h2 class="text-center mb-4">Lobbies</h2>
