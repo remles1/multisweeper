@@ -67,11 +67,11 @@ socket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     if(data["type"] === "user_board"){
         let user_board = JSON.parse(data["message"])
-        user_board = user_board.map(row =>
+        let user_board_mapped = user_board.map(row =>
             row.map(cell => user_board_dict[cell])
         )
         //console.log(user_board)
-        render_user_board(user_board)
+        render_user_board(user_board, user_board_mapped)
         let gameOver = data["over"];
         if (gameOver) {
             timerRunning = false;
@@ -99,15 +99,19 @@ socket.onclose = function (e) {
     console.log("WebSocket Disconnected!");
 };
 
-function render_user_board(user_board) {
+function render_user_board(user_board, user_board_mapped) {
     const board = document.getElementById("board");
     board.innerHTML = '';
+
+    minesLeft = mine_count;
     for (let i = 0; i < user_board.length; i++) {
         for (let j = 0; j < user_board[0].length; j++) {
             let cell = document.createElement("div");
             cell.id = "id" + i + "-" + j;
-            cell.className = "cell " + user_board[i][j];
-
+            cell.className = "cell " + user_board_mapped[i][j];
+            if(user_board[i][j].includes("f")){
+                minesLeft--;
+            }
             cell.addEventListener("mousedown", cellMouseDown);
             cell.addEventListener("mouseup", cellMouseUp);
             cell.addEventListener("mouseover", cellMouseOver);
@@ -116,6 +120,7 @@ function render_user_board(user_board) {
             board.appendChild(cell)
         }
     }
+    mines_left_update_counter(minesLeft)
 }
 
 let leftPressed = false;

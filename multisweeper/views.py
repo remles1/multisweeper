@@ -24,4 +24,4 @@ def create_lobby(request):
 def lobby(request, lobby_id):
     if lobby_id not in lobbies:
         raise Http404("No such lobby")
-    return render(request, "multisweeper/lobby.html", {"lobby_id": lobby_id})
+    return render(request, "multisweeper/lobby.html", {"lobby_id": lobby_id, "mine_count": lobbies[lobby_id].game_instance.mine_count})

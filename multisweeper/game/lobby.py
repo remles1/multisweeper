@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Dict, Any
 
 from django.contrib.auth.models import User
 
@@ -13,11 +13,14 @@ lobbies = {}
 
 class Lobby:
     lobby_id: str
+    owner: User
+    game_started: bool = False
     max_players: int
     current_players: int = 0
     players: List[User]
-    player_profiles: List[PlayerProfile]
-    player_connections: List['PlayerConsumer']
+    player_scores: dict[User, int]
+    player_profiles: Dict[User, PlayerProfile]
+    player_connections: Dict[User, 'PlayerConsumer']
     active_player: int = 0
     game_instance: GameLogic
 
@@ -25,26 +28,33 @@ class Lobby:
         self.lobby_id = lobby_id
         self.max_players = max_players
         self.players = []
-        self.player_profiles = []
-        self.player_connections = []
-        self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=60)
+        self.player_profiles = {}
+        self.player_connections = {}
+        self.player_scores = {}
+        self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=40)
 
     def add_player(self, player_connection: 'PlayerConsumer'):
+        if self.current_players >= self.max_players:
+            return
+        if len(self.players) == 0:
+            self.owner = player_connection.player
         self.current_players += 1
-        self.player_connections.append(player_connection)
         self.players.append(player_connection.player)
-        self.player_profiles.append(PlayerProfile.objects.get(user=player_connection.player))
+        self.player_connections[player_connection.player] = player_connection
+        self.player_scores[player_connection.player] = 0
+        self.player_profiles[player_connection.player] = PlayerProfile.objects.get(user=player_connection.player)
 
     def remove_player(self, player_connection: 'PlayerConsumer'):
         self.current_players -= 1
-        self.player_connections.remove(player_connection)
+        del self.player_connections[player_connection.player]
         self.players.remove(player_connection.player)
-        self.player_profiles.remove(PlayerProfile.objects.get(user=player_connection.player))
+        del self.player_profiles[PlayerProfile.objects.get(user=player_connection.player)]
+        del self.player_scores[player_connection.player]
 
-    def left_click_game(self, y, x, player):
+    def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
 
-        player_index = self.player_connections.index(player)
-        if player_index != self.active_player:
+        player_index = self.players.index(player_connection.player)
+        if player_index != self.active_player or self.game_instance.user_board[y][x] != "c":
             return
         self.game_instance.cell_left_clicked(y, x, player_index)
 
@@ -52,7 +62,7 @@ class Lobby:
             self.active_player = (self.active_player + 1) % self.max_players
 
     def broadcast(self):
-        print([p.player.username for p in self.player_connections])
-        print("active player:", self.active_player)
-        for player in self.player_connections:
-            player.send_user_board()
+        print([p.username for p in self.players])
+        print(self.active_player)
+        for player_connection in self.player_connections.values():
+            player_connection.send_user_board()

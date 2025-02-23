@@ -30,7 +30,7 @@
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>
-                        {% for player_profile in value.player_profiles %}
+                        {% for player_profile in value.player_profiles.values %}
                             {{ player_profile.user.username }}: {{player_profile.elo_rating}} ELO
                             <br>
                         {% endfor %}

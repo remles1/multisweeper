@@ -21,7 +21,7 @@ class GameLogic:
     time_ended: datetime.date
     game_over: bool
     game_won: bool
-    _cells_opened: int = 0
+    mines_clicked: int = 0
     seed: str
     """
         user_board values:
@@ -98,7 +98,7 @@ class GameLogic:
         obj.logic_board = model_instance.logic_board
         obj.traversed_board = model_instance.traversed_board
         obj.user_board = model_instance.user_board
-        obj._cells_opened = model_instance._cells_opened
+        obj.mines_clicked = model_instance.mines_clicked
         return obj
 
     def create_logic_board(self) -> List[List[int]]:
@@ -194,25 +194,16 @@ class GameLogic:
 
         cell_val = self.logic_board[y][x]
         if cell_val == -1:
+            self.mines_clicked += 1
             self.user_board[y][x] = f"f_{player_number}"
         elif cell_val == 0:
-            self.user_board[y][x] = "0"
-            self.open_cells_recursively(y, x)
+            if self.user_board[y][x] == "c":
+                self.user_board[y][x] = "0"
+                self.open_cells_recursively(y, x)
         elif cell_val > 0:
-            if self.user_board[y][x] != "c":
-                self.chord(y, x)
-            else:
-                self.user_board[y][x] = f"{cell_val}"
-                self.traversed_board[y][x] = True
-                self._cells_opened += 1
+            if self.user_board[y][x] == "c":
+                self.open_cells_recursively(y, x)
         self.check_win()
-
-    def cell_right_clicked(self, y: int, x: int):
-        if self.user_board[y][x] == "c":
-            self.user_board[y][x] = "f"
-
-        elif self.user_board[y][x] == "f":
-            self.user_board[y][x] = "c"
 
     def open_cells_recursively(self, y, x):
         if self.traversed_board[y][x]:
@@ -225,7 +216,7 @@ class GameLogic:
 
         if not self.logic_board[y][x] == 0:
             self.user_board[y][x] = str(self.logic_board[y][x])  # not opened numbered cell
-            self._cells_opened += 1
+            self.mines_clicked += 1
             return
         else:
             for dy in range(y - 1, y + 1 + 1):
@@ -238,49 +229,13 @@ class GameLogic:
 
                     if dy == y and dx == x:
                         self.user_board[dy][dx] = str(self.logic_board[dy][dx])
-                        self._cells_opened += 1
                         # print(f"this should be zero: {str(self.logic_board[dy][dx])}")
 
                     self.open_cells_recursively(dy, dx)
 
-    def chord(self, y, x):
-        cell_value = self.logic_board[y][x]
-        flag_sum = 0
-        for dy in range(y - 1, y + 1 + 1):
-            if not 0 <= dy < self.height:
-                continue
-
-            for dx in range(x - 1, x + 1 + 1):
-                if not 0 <= dx < self.width:
-                    continue
-
-                if dy == y and dx == x:
-                    continue
-
-                if self.user_board[dy][dx] == "f":
-                    flag_sum += 1
-
-        if flag_sum == cell_value:
-            for dy in range(y - 1, y + 1 + 1):
-                if not 0 <= dy < self.height:
-                    continue
-
-                for dx in range(x - 1, x + 1 + 1):
-                    if not 0 <= dx < self.width:
-                        continue
-
-                    if dy == y and dx == x:
-                        continue
-
-                    if self.logic_board[dy][dx] == -1 and self.user_board[dy][dx] != "f":
-                        self.on_lose(dy, dx)
-
-                    if self.user_board[dy][dx] == "c":
-                        self.open_cells_recursively(dy, dx)
-
     def check_win(self):
         # print(f"_cells_opened: {self._cells_opened}")
-        if self._cells_opened == (self.width * self.height - self.mine_count):
+        if self.mines_clicked == self.mine_count:
             self.on_win()
 
     def on_win(self):
@@ -289,8 +244,8 @@ class GameLogic:
         self.time_ended = timezone.now()
         for dy in range(self.height):
             for dx in range(self.width):
-                if self.logic_board[dy][dx] == -1:
-                    self.user_board[dy][dx] = "f"
+                if self.logic_board[dy][dx] != -1:
+                    self.user_board[dy][dx] = f"{self.logic_board[dy][dx]}"
 
     def on_lose(self, y, x):
         self.game_over = True
