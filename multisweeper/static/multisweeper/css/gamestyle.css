@@ -60,8 +60,12 @@
     background-image: url("../images/cell-closed.svg");
 }
 
-.cell-flagged {
-    background-image: url("../images/cell-flagged.svg");
+.cell-flagged-0 {
+    background-image: url("../images/cell-flagged-0.svg");
+}
+
+.cell-flagged-1 {
+    background-image: url("../images/cell-flagged-1.png");
 }
 
 .cell-flagged-wrong {
