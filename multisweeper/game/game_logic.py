@@ -196,11 +196,7 @@ class GameLogic:
         if cell_val == -1:
             self.mines_clicked += 1
             self.user_board[y][x] = f"f_{player_number}"
-        elif cell_val == 0:
-            if self.user_board[y][x] == "c":
-                self.user_board[y][x] = "0"
-                self.open_cells_recursively(y, x)
-        elif cell_val > 0:
+        elif cell_val >= 0:
             if self.user_board[y][x] == "c":
                 self.open_cells_recursively(y, x)
         self.check_win()

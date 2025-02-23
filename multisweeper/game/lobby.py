@@ -31,7 +31,7 @@ class Lobby:
         self.player_profiles = {}
         self.player_connections = {}
         self.player_scores = {}
-        self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=40)
+        self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=20)
 
     def add_player(self, player_connection: 'PlayerConsumer'):
         if self.current_players >= self.max_players:
@@ -41,14 +41,14 @@ class Lobby:
         self.current_players += 1
         self.players.append(player_connection.player)
         self.player_connections[player_connection.player] = player_connection
-        self.player_scores[player_connection.player] = 0
         self.player_profiles[player_connection.player] = PlayerProfile.objects.get(user=player_connection.player)
+        self.player_scores[player_connection.player] = 0
 
     def remove_player(self, player_connection: 'PlayerConsumer'):
         self.current_players -= 1
-        del self.player_connections[player_connection.player]
         self.players.remove(player_connection.player)
-        del self.player_profiles[PlayerProfile.objects.get(user=player_connection.player)]
+        del self.player_connections[player_connection.player]
+        del self.player_profiles[player_connection.player]
         del self.player_scores[player_connection.player]
 
     def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
@@ -60,6 +60,8 @@ class Lobby:
 
         if self.game_instance.logic_board[y][x] != -1:
             self.active_player = (self.active_player + 1) % self.max_players
+        else:
+            self.player_scores[player_connection.player] += 1
 
     def broadcast(self):
         print([p.username for p in self.players])
