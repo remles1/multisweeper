@@ -184,7 +184,7 @@ class GameLogic:
         return local_user_board
 
     def cell_left_clicked(self, y: int, x: int, player_number: int):
-        if self.user_board[y][x] == "f":
+        if "f" in self.user_board[y][x]:
             return
         #  add to time spent playing the game
         if self.time_started is None:
@@ -218,7 +218,7 @@ class GameLogic:
         if self.traversed_board[y][x]:
             return
 
-        if self.user_board[y][x] == "f":  # dont touch flagged cells
+        if "f" in self.user_board[y][x]:  # dont touch flagged cells
             return
 
         self.traversed_board[y][x] = True

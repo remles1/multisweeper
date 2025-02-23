@@ -48,4 +48,4 @@ class PlayerConsumer(WebsocketConsumer):
 
     def join_lobby(self, lobby_id):
         self.lobby = lobbies[lobby_id]
-        self.lobby.add_player(player=self)
+        self.lobby.add_player(player_connection=self)
