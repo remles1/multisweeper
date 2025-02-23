@@ -12,7 +12,7 @@ lobbies = {}
 class Lobby:
     lobby_id: str
     player_count: int
-    players: List['PlayerConsumer']  # Use string annotation
+    players: List['PlayerConsumer']
     active_player = 0
     game_instance: GameLogic
 
@@ -41,6 +41,6 @@ class Lobby:
 
     def broadcast(self):
         print([p.player.username for p in self.players])
-        print("active player:",self.active_player)
+        print("active player:", self.active_player)
         for player in self.players:
             player.send_user_board()
