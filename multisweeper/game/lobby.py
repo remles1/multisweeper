@@ -1,4 +1,4 @@
-from typing import List, TYPE_CHECKING, Dict, Any
+from typing import List, TYPE_CHECKING, Dict, Union
 
 from django.contrib.auth.models import User
 
@@ -18,9 +18,9 @@ class Lobby:
     max_players: int
     current_players: int = 0
     players: List[User]
-    player_scores: dict[User, int]
-    player_profiles: Dict[User, PlayerProfile]
-    player_connections: Dict[User, 'PlayerConsumer']
+    player_scores: dict[Union[User, str], int]  # str is for the guest
+    player_profiles: Dict[Union[User, str], PlayerProfile | None]
+    player_connections: Dict[Union[User, str], 'PlayerConsumer']
     active_player: int = 0
     game_instance: GameLogic
 
@@ -41,14 +41,18 @@ class Lobby:
         self.current_players += 1
         self.players.append(player_connection.player)
         self.player_connections[player_connection.player] = player_connection
-        self.player_profiles[player_connection.player] = PlayerProfile.objects.get(user=player_connection.player)
+
+        if isinstance(player_connection.player, User):
+            self.player_profiles[player_connection.player] = PlayerProfile.objects.get(user=player_connection.player)
+
         self.player_scores[player_connection.player] = 0
 
     def remove_player(self, player_connection: 'PlayerConsumer'):
         self.current_players -= 1
         self.players.remove(player_connection.player)
         del self.player_connections[player_connection.player]
-        del self.player_profiles[player_connection.player]
+        if isinstance(player_connection.player, User):
+            del self.player_profiles[player_connection.player]
         del self.player_scores[player_connection.player]
 
     def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
@@ -64,7 +68,6 @@ class Lobby:
             self.player_scores[player_connection.player] += 1
 
     def broadcast(self):
-        print([p.username for p in self.players])
-        print(self.active_player)
+        print(self.players)
         for player_connection in self.player_connections.values():
             player_connection.send_user_board()

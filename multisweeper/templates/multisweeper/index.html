@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load custom_filters %}
 
 {% block content %}
 {% if user.is_authenticated %}
@@ -30,17 +31,23 @@
             </tr>
         </thead>
         <tbody>
-            {% for key, value in lobbies.items %}
+            {% for key,lobby in lobbies.items %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>
-                        {% for player_profile in value.player_profiles.values %}
-                            {{ player_profile.user.username }}: {{player_profile.elo_rating}} ELO
+                        {% for player in lobby.players %}
+                            {% with profile=lobby.player_profiles|get_item:player %}
+                                {% if profile %}
+                                    {{ player.username }}: {{ profile|get_elo }} ELO
+                                {% else %}
+                                    {{ player }}: --GUEST--
+                                {% endif %}
+                            {% endwith %}
                             <br>
                         {% endfor %}
                     </td>
                     <td>
-                        {{ value.current_players }}/{{ value.max_players }}
+                        {{ lobby.current_players }}/{{ lobby.max_players }}
                     </td>
                     <td><button class="btn btn-join" onclick="window.location.href='/lobby/{{ key }}';">Join</button></td>
                 </tr>

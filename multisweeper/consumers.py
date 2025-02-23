@@ -1,4 +1,5 @@
 import json
+from typing import Union
 
 from channels.generic.websocket import WebsocketConsumer
 from django.contrib.auth.models import User
@@ -7,11 +8,14 @@ from multisweeper.game.lobby import Lobby, lobbies
 
 
 class PlayerConsumer(WebsocketConsumer):
-    player: User
+    player: Union[User, str]
     lobby: Lobby
 
     def connect(self):
         self.player = self.scope["user"]
+        if not self.player.is_authenticated:
+            self.player = self.scope["session"]["username"]
+
         lobby_id = self.scope['url_route']['kwargs']['lobby_id']
 
         self.join_lobby(lobby_id)
