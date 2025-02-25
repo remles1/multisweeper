@@ -17,8 +17,8 @@ class Lobby:
     game_started: bool = False
     max_players: int
     current_players: int = 0
-    players: List[User]
-    player_scores: dict[Union[User, str], int]  # str is for the guest
+    players: List[Union[User, str]]  # str is for the guest
+    player_scores: dict[Union[User, str], int]
     player_profiles: Dict[Union[User, str], PlayerProfile | None]
     player_connections: Dict[Union[User, str], 'PlayerConsumer']
     active_player: int = 0
@@ -68,6 +68,7 @@ class Lobby:
             self.player_scores[player_connection.player] += 1
 
     def broadcast(self):
-        print(self.players)
+        print([type(p) for p in self.players])
+        print(self.active_player)
         for player_connection in self.player_connections.values():
             player_connection.send_user_board()
