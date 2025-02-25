@@ -37,12 +37,12 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             await self.lobby.left_click_game(y, x, self)
         await self.lobby.broadcast(self.lobby.create_user_board_json())
 
-    async def send_json(self, content):
-        await self.send(text_data=content)
-
     async def disconnect(self, close_code):
         await self.lobby.remove_player(self)
 
     async def join_lobby(self, lobby_id):
         self.lobby = lobbies[lobby_id]
         await self.lobby.add_player(player_connection=self)
+
+    async def send_message(self, event):
+        await self.send(text_data=event['content'])

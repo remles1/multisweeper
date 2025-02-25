@@ -3,6 +3,7 @@ import json
 from typing import List, TYPE_CHECKING, Dict, Union
 
 from asgiref.sync import sync_to_async
+from channels.layers import get_channel_layer
 from django.contrib.auth.models import User
 
 from multisweeper.game.game_logic import GameLogic
@@ -37,6 +38,9 @@ class Lobby:
         self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=20)
         self.lock = asyncio.Lock()
 
+        self.channel_layer = get_channel_layer()
+        self.group_name = f'lobby_{self.lobby_id}'
+
     async def add_player(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
             if self.current_players >= self.max_players:
@@ -52,6 +56,11 @@ class Lobby:
 
             self.player_scores[player_connection.player] = 0
 
+            await self.channel_layer.group_add(
+                self.group_name,
+                player_connection.channel_name
+            )
+
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
             self.current_players -= 1
@@ -61,8 +70,15 @@ class Lobby:
                 del self.player_profiles[player_connection.player]
             del self.player_scores[player_connection.player]
 
+            await self.channel_layer.group_discard(
+                self.group_name,
+                player_connection.channel_name
+            )
+
     async def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
         async with self.lock:
+            print(self.players)
+            print(self.player_connections)
             player_index = self.players.index(player_connection.player)
             if player_index != self.active_player or self.game_instance.user_board[y][x] != "c":
                 return
@@ -74,8 +90,13 @@ class Lobby:
                 self.player_scores[player_connection.player] += 1
 
     async def broadcast(self, content):
-        for player_connection in self.player_connections.values():
-            await player_connection.send_json(content)
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'send_message',
+                'content': content
+            }
+        )
 
     def create_user_board_json(self):
         user_board_json = json.dumps(self.game_instance.user_board)
