@@ -1,5 +1,7 @@
+import asyncio
 from typing import List, TYPE_CHECKING, Dict, Union
 
+from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
 
 from multisweeper.game.game_logic import GameLogic
@@ -32,43 +34,44 @@ class Lobby:
         self.player_connections = {}
         self.player_scores = {}
         self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=20)
+        self.lock = asyncio.Lock()
 
-    def add_player(self, player_connection: 'PlayerConsumer'):
-        if self.current_players >= self.max_players:
-            return
-        if len(self.players) == 0:
-            self.owner = player_connection.player
-        self.current_players += 1
-        self.players.append(player_connection.player)
-        self.player_connections[player_connection.player] = player_connection
+    async def add_player(self, player_connection: 'PlayerConsumer'):
+        async with self.lock:
+            if self.current_players >= self.max_players:
+                return
+            if len(self.players) == 0:
+                self.owner = player_connection.player
+            self.current_players += 1
+            self.players.append(player_connection.player)
+            self.player_connections[player_connection.player] = player_connection
 
-        if isinstance(player_connection.player, User):
-            self.player_profiles[player_connection.player] = PlayerProfile.objects.get(user=player_connection.player)
+            if isinstance(player_connection.player, User):
+                self.player_profiles[player_connection.player] = await PlayerProfile.objects.aget(user=player_connection.player)
 
-        self.player_scores[player_connection.player] = 0
+            self.player_scores[player_connection.player] = 0
 
-    def remove_player(self, player_connection: 'PlayerConsumer'):
-        self.current_players -= 1
-        self.players.remove(player_connection.player)
-        del self.player_connections[player_connection.player]
-        if isinstance(player_connection.player, User):
-            del self.player_profiles[player_connection.player]
-        del self.player_scores[player_connection.player]
+    async def remove_player(self, player_connection: 'PlayerConsumer'):
+        async with self.lock:
+            self.current_players -= 1
+            self.players.remove(player_connection.player)
+            del self.player_connections[player_connection.player]
+            if isinstance(player_connection.player, User):
+                del self.player_profiles[player_connection.player]
+            del self.player_scores[player_connection.player]
 
-    def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
+    async def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
+        async with self.lock:
+            player_index = self.players.index(player_connection.player)
+            if player_index != self.active_player or self.game_instance.user_board[y][x] != "c":
+                return
+            self.game_instance.cell_left_clicked(y, x, player_index)
 
-        player_index = self.players.index(player_connection.player)
-        if player_index != self.active_player or self.game_instance.user_board[y][x] != "c":
-            return
-        self.game_instance.cell_left_clicked(y, x, player_index)
+            if self.game_instance.logic_board[y][x] != -1:
+                self.active_player = (self.active_player + 1) % self.max_players
+            else:
+                self.player_scores[player_connection.player] += 1
 
-        if self.game_instance.logic_board[y][x] != -1:
-            self.active_player = (self.active_player + 1) % self.max_players
-        else:
-            self.player_scores[player_connection.player] += 1
-
-    def broadcast(self):
-        print([type(p) for p in self.players])
-        print(self.active_player)
+    async def broadcast(self):
         for player_connection in self.player_connections.values():
-            player_connection.send_user_board()
+            await player_connection.send_user_board()
