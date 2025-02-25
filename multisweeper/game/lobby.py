@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import List, TYPE_CHECKING, Dict, Union
 
 from asgiref.sync import sync_to_async
@@ -72,6 +73,17 @@ class Lobby:
             else:
                 self.player_scores[player_connection.player] += 1
 
-    async def broadcast(self):
+    async def broadcast(self, content):
         for player_connection in self.player_connections.values():
-            await player_connection.send_user_board()
+            await player_connection.send_json(content)
+
+    def create_user_board_json(self):
+        user_board_json = json.dumps(self.game_instance.user_board)
+        content = json.dumps({
+            "type": "user_board",
+            "won": self.game_instance.game_won,
+            "over": self.game_instance.game_over,
+            "time": self.game_instance.time_spent,
+            "message": user_board_json
+        })
+        return content

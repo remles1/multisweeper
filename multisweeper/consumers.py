@@ -23,7 +23,7 @@ class PlayerConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
-        await self.lobby.broadcast()
+        await self.lobby.broadcast(self.lobby.create_user_board_json())
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -35,17 +35,10 @@ class PlayerConsumer(AsyncWebsocketConsumer):
 
         if text_data_json["type"] == "l_click":
             await self.lobby.left_click_game(y, x, self)
-        await self.lobby.broadcast()
+        await self.lobby.broadcast(self.lobby.create_user_board_json())
 
-    async def send_user_board(self):
-        user_board_json = json.dumps(self.lobby.game_instance.user_board)
-        await self.send(text_data=json.dumps({
-            "type": "user_board",
-            "won": self.lobby.game_instance.game_won,
-            "over": self.lobby.game_instance.game_over,
-            "time": self.lobby.game_instance.time_spent,
-            "message": user_board_json
-        }))
+    async def send_json(self, content):
+        await self.send(text_data=content)
 
     async def disconnect(self, close_code):
         await self.lobby.remove_player(self)
