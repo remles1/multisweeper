@@ -141,7 +141,7 @@ function render_seats(data){
             player_color_icon.className = `circle circle-${key}`;
         }
         if(seats[key] === null){
-            player_seat_span.innerHTML = `Empty seat ${key}`;
+            player_seat_span.innerHTML = `Empty seat ${parseInt(key)+1}`;
         }
         else {
             player_seat_span.innerHTML = `${seats[key]}`;

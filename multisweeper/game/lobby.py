@@ -121,6 +121,10 @@ class Lobby:
             }
         )
 
+    async def start_game(self, player_connection: 'PlayerConsumer'):
+        if player_connection.player is self.owner:
+            self.game_started = True
+
     async def broadcast_board_and_seats(self):
         await self.broadcast(self.create_user_board_json())
         await self.broadcast(self.create_seats_json())
