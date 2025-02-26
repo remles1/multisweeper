@@ -1,5 +1,5 @@
-.game-container {
-    display: grid;
+.lobby-container {
+    display: flex;
     background-color: #2c3338; /* Dark game container */
     padding: 20px;
     gap: 20px;
@@ -7,6 +7,11 @@
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); /* Subtle white shadow */
     grid-template-columns: auto;
     justify-items: center; /* Center items horizontally within their grid area */
+}
+
+.side-container{
+    display: flex;
+    flex: 1;
 }
 
 #board {

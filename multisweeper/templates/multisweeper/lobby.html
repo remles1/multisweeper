@@ -67,50 +67,48 @@
 
 {% block content %}
 
-<div id="game-container" class="game-container ">
-    <div id="game-and-stats">
-        <div id="game">
-            <div class="top_part">
-                <div class="border_corners">
-                    <div class="corner_top_left"></div><div class="border_hor"></div><div class="corner_top_right"></div>
-                </div>
-                <div class="border_corners">
-                    <div class="border_vert"></div>
-                        <div class="panel">
-                            <div id="mine_counter" class="counter">
-                                <div class="digits">
-                                    <div id="mlc_d0" class="digit"></div><div id="mlc_d1" class="digit"></div><div id="mlc_d2" class="digit"></div>
-                                </div>
-                            </div>
-                            <button id="new-game-button" class="face-button face-neutral"></button>
-                            <div id="seconds_counter" class="counter">
-                                <div class="digits">
-                                    <div id="sc_d0" class="digit"></div><div id="sc_d1" class="digit"></div><div id="sc_d2" class="digitS"></div>
-                                </div>
+<div id="lobby-container" class="lobby-container ">
+    <div class="side-container"></div>
+    <div id="game">
+        <div class="top_part">
+            <div class="border_corners">
+                <div class="corner_top_left"></div><div class="border_hor"></div><div class="corner_top_right"></div>
+            </div>
+            <div class="border_corners">
+                <div class="border_vert"></div>
+                    <div class="panel">
+                        <div id="mine_counter" class="counter">
+                            <div class="digits">
+                                <div id="mlc_d0" class="digit"></div><div id="mlc_d1" class="digit"></div><div id="mlc_d2" class="digit"></div>
                             </div>
                         </div>
-                    <div class="border_vert"></div>
-                </div>
-            </div>
-            <div class="border_corners">
-                <div class="t_left"></div><div class="border_hor"></div><div class="t_right"></div>
-            </div>
-            <div class="border_corners">
-                <div class="border_vert"></div>
-                <div id="board">
-
-                </div>
+                        <button id="new-game-button" class="face-button face-neutral"></button>
+                        <div id="seconds_counter" class="counter">
+                            <div class="digits">
+                                <div id="sc_d0" class="digit"></div><div id="sc_d1" class="digit"></div><div id="sc_d2" class="digitS"></div>
+                            </div>
+                        </div>
+                    </div>
                 <div class="border_vert"></div>
             </div>
-            <div class="border_corners">
-                <div class="corner_bottom_left"></div><div class="border_hor"></div><div class="corner_bottom_right"></div>
-            </div>
+        </div>
+        <div class="border_corners">
+            <div class="t_left"></div><div class="border_hor"></div><div class="t_right"></div>
+        </div>
+        <div class="border_corners">
+            <div class="border_vert"></div>
+            <div id="board">
 
+            </div>
+            <div class="border_vert"></div>
+        </div>
+        <div class="border_corners">
+            <div class="corner_bottom_left"></div><div class="border_hor"></div><div class="corner_bottom_right"></div>
         </div>
 
-        <div id="stats" class="stats" style="display: none;"></div>
     </div>
 
+    <div id="lobby-info" class="side-container"></div>
 
 </div>
 
