@@ -81,6 +81,7 @@ class Lobby:
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
         if self.seats[seat_number] is None:
+            self.seats = {k: (None if v is player_connection.player else v) for k, v in self.seats.items()}
             self.seats[seat_number] = player_connection.player
 
         await self.broadcast(self.create_seats_json())
