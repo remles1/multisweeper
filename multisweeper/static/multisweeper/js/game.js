@@ -66,8 +66,7 @@ socket.onopen = function (e) {
 socket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     if(data["type"] === "seats"){
-        let seats = data["message"]
-        render_seats(seats)
+        render_seats(data)
     }
     else if(data["type"] === "user_board"){
         let user_board = JSON.parse(data["message"])
@@ -127,15 +126,27 @@ function render_user_board(user_board, user_board_mapped) {
     mines_left_update_counter(minesLeft)
 }
 
-function render_seats(seats){
+function render_seats(data){
+    const seats = data["message"];
+    const active_seat = `${data["active_seat"]}`;
     for(let key in seats){
+        // const player_seat_div = document.getElementById(`seat-${key}`)
+        const player_color_icon = document.getElementById(`player-color-icon-${key}`);
         const player_seat_span = document.getElementById(`player-seat-${key}`);
+
+        if(active_seat === key){
+            player_color_icon.className = `triangle triangle-${key}`;
+        }
+        else {
+            player_color_icon.className = `circle circle-${key}`;
+        }
         if(seats[key] === null){
-            player_seat_span.innerHTML = `Seat ${key}`;
+            player_seat_span.innerHTML = `Empty seat ${key}`;
         }
         else {
             player_seat_span.innerHTML = `${seats[key]}`;
         }
+
     }
 }
 

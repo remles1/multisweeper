@@ -120,6 +120,10 @@ class Lobby:
             }
         )
 
+    async def broadcast_board_and_seats(self):
+        await self.broadcast(self.create_user_board_json())
+        await self.broadcast(self.create_seats_json())
+
     def create_user_board_json(self):
         user_board_json = json.dumps(self.game_instance.user_board)
         content = json.dumps({
@@ -141,6 +145,7 @@ class Lobby:
 
         content = json.dumps({
             "type": "seats",
+            "active_seat": self.active_seat,
             "message": temp_seats,
         })
         return content

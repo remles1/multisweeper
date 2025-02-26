@@ -79,6 +79,30 @@
         .triangle-1 { border-left-color: yellow; }
         .triangle-2 { border-left-color: blue; }
         .triangle-3 { border-left-color: green; }
+
+        .circle {
+            width: 15px;
+            height: 15px;
+            background-color: #000; /* Default color */
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .circle-0 {
+            background-color: red;
+        }
+
+        .circle-1 {
+            background-color: yellow;
+        }
+
+        .circle-2 {
+            background-color: blue;
+        }
+
+        .circle-3 {
+            background-color: green;
+        }
     </style>
     <link rel="stylesheet" href="{% static 'multisweeper/css/gamestyle.css' %}">
 {% endblock %}
@@ -131,17 +155,9 @@
         <div id="player-seats">
 
             {% for seat_number in lobby.seats.keys %}
-            <div id="seat-{{ seat_number }}"class="seat" data-seat="{{ seat_number }}" onclick="chooseSeat({{ seat_number }})">
-                <div class="triangle triangle-{{ seat_number }}"></div>
+            <div id="seat-{{ seat_number }}" class="seat" data-seat="{{ seat_number }}" onclick="chooseSeat({{ seat_number }})">
+                <div id="player-color-icon-{{ seat_number }}" class="circle circle-{{ seat_number }}"></div>
                 <span id="player-seat-{{ seat_number }}"></span>
-<!--                {% if not player_seated %}-->
-<!--                    <span id="player-{{ seat_number }}">Seat {{ seat_number }}</span>-->
-<!--                {% elif user.is_authenticated %}-->
-<!--                    <span id="player-{{ seat_number }}">{{ player_seated.username }}</span>-->
-<!--                {% else %}-->
-<!--                    <span id="player-{{ seat_number }}">{{ request.session.username }}</span>-->
-<!--                {% endif %}-->
-
             </div>
             {% endfor %}
         </div>
