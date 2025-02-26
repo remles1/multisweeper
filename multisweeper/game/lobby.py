@@ -22,16 +22,20 @@ class Lobby:
     max_players: int
     current_players: int = 0
     players: List[Union[User, str]]  # str is for the guest
-    player_scores: dict[Union[User, str], int]
+    seats: Dict[int, Union[User, str] | None]  # key - seat number, value - player occupying the seat
+    player_scores: Dict[Union[User, str], int]
     player_profiles: Dict[Union[User, str], PlayerProfile | None]
     player_connections: Dict[Union[User, str], 'PlayerConsumer']
-    active_player: int = 0
+    active_seat: int = 0
     game_instance: GameLogic
 
     def __init__(self, lobby_id, max_players=2):
         self.lobby_id = lobby_id
         self.max_players = max_players
         self.players = []
+        self.seats = {}
+        for i in range(max_players):
+            self.seats[i] = None
         self.player_profiles = {}
         self.player_connections = {}
         self.player_scores = {}
@@ -42,6 +46,18 @@ class Lobby:
         self.group_name = f'lobby_{self.lobby_id}'
 
     async def add_player(self, player_connection: 'PlayerConsumer'):
+        """
+        so far:
+            updates current_players,
+            appends player to self.players
+            appends connection to connections
+            adds a profile if is a User instance
+            sets score to 0 for player
+
+            waits for user to choose their seat.
+        :param player_connection:
+        :return:
+        """
         async with self.lock:
             if self.current_players >= self.max_players:
                 return
@@ -61,10 +77,19 @@ class Lobby:
                 player_connection.channel_name
             )
 
+            await self.broadcast(self.create_seats_json())
+
+    async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
+        if self.seats[seat_number] is None:
+            self.seats[seat_number] = player_connection.player
+
+        await self.broadcast(self.create_seats_json())
+
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
             self.current_players -= 1
             self.players.remove(player_connection.player)
+            self.seats = {k: (None if v is player_connection.player else v) for k, v in self.seats.items()}
             del self.player_connections[player_connection.player]
             if isinstance(player_connection.player, User):
                 del self.player_profiles[player_connection.player]
@@ -77,15 +102,12 @@ class Lobby:
 
     async def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
         async with self.lock:
-            print(self.players)
-            print(self.player_connections)
-            player_index = self.players.index(player_connection.player)
-            if player_index != self.active_player or self.game_instance.user_board[y][x] != "c":
+            if player_connection.player != self.seats[self.active_seat] or self.game_instance.user_board[y][x] != "c":
                 return
-            self.game_instance.cell_left_clicked(y, x, player_index)
+            self.game_instance.cell_left_clicked(y, x, self.active_seat)
 
             if self.game_instance.logic_board[y][x] != -1:
-                self.active_player = (self.active_player + 1) % self.max_players
+                self.active_seat = (self.active_seat + 1) % self.max_players
             else:
                 self.player_scores[player_connection.player] += 1
 
@@ -106,5 +128,19 @@ class Lobby:
             "over": self.game_instance.game_over,
             "time": self.game_instance.time_spent,
             "message": user_board_json
+        })
+        return content
+
+    def create_seats_json(self):
+        temp_seats = {}
+        for seat, player in self.seats.items():
+            if isinstance(player, User):
+                temp_seats[seat] = player.username
+            else:
+                temp_seats[seat] = player
+
+        content = json.dumps({
+            "type": "seats",
+            "message": temp_seats,
         })
         return content

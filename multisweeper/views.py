@@ -32,7 +32,7 @@ def lobby(request, lobby_id):
         if 'username' not in request.session:
             return redirect(f'/pick-username/?next=/lobby/{lobby_id}/')
 
-    return render(request, "multisweeper/lobby.html", {"lobby_id": lobby_id, "mine_count": lobbies[lobby_id].game_instance.mine_count})
+    return render(request, "multisweeper/lobby.html", {"lobby_id": lobby_id, "lobby": lobbies[lobby_id], "mine_count": lobbies[lobby_id].game_instance.mine_count})
 
 
 def pick_username(request):

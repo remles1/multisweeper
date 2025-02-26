@@ -3,7 +3,6 @@ from typing import Union
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
-from asgiref.sync import sync_to_async
 
 from multisweeper.game.lobby import Lobby, lobbies
 
@@ -20,6 +19,7 @@ class PlayerConsumer(AsyncWebsocketConsumer):
         lobby_id = self.scope['url_route']['kwargs']['lobby_id']
 
         await self.join_lobby(lobby_id)
+        await self.lobby.add_player(self)
 
         await self.accept()
 
@@ -28,21 +28,21 @@ class PlayerConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
 
-        message = text_data_json["message"]
-        split_message = message.split('-')
-        y = int(split_message[0])
-        x = int(split_message[1])
-
         if text_data_json["type"] == "l_click":
+            message = text_data_json["message"]
+            split_message = message.split('-')
+            y = int(split_message[0])
+            x = int(split_message[1])
             await self.lobby.left_click_game(y, x, self)
-        await self.lobby.broadcast(self.lobby.create_user_board_json())
+            await self.lobby.broadcast(self.lobby.create_user_board_json())
+        elif text_data_json["type"] == "choose_seat":
+            await self.lobby.choose_seat(self, text_data_json["message"])
 
     async def disconnect(self, close_code):
         await self.lobby.remove_player(self)
 
     async def join_lobby(self, lobby_id):
         self.lobby = lobbies[lobby_id]
-        await self.lobby.add_player(player_connection=self)
 
     async def send_message(self, event):
         await self.send(text_data=event['content'])

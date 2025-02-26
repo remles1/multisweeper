@@ -65,7 +65,11 @@ socket.onopen = function (e) {
 
 socket.onmessage = function (e) {
     const data = JSON.parse(e.data);
-    if(data["type"] === "user_board"){
+    if(data["type"] === "seats"){
+        let seats = data["message"]
+        render_seats(seats)
+    }
+    else if(data["type"] === "user_board"){
         let user_board = JSON.parse(data["message"])
         let user_board_mapped = user_board.map(row =>
             row.map(cell => user_board_dict[cell])
@@ -123,6 +127,18 @@ function render_user_board(user_board, user_board_mapped) {
     mines_left_update_counter(minesLeft)
 }
 
+function render_seats(seats){
+    for(let key in seats){
+        const player_seat_span = document.getElementById(`player-seat-${key}`);
+        if(seats[key] === null){
+            player_seat_span.innerHTML = `Seat ${key}`;
+        }
+        else {
+            player_seat_span.innerHTML = `${seats[key]}`;
+        }
+    }
+}
+
 let leftPressed = false;
 
 function cellMouseDown(event) {
@@ -178,6 +194,13 @@ function cellMouseUp(event) {
     }
 }
 
+function chooseSeat(seat){
+    const message = JSON.stringify({
+        type: "choose_seat",
+        message: seat,
+    })
+    socket.send(message)
+}
 
 function timer() {
     let seconds = 0;
@@ -213,3 +236,4 @@ function convertNumberTo3Digits(number){
     let formatted = number.toString().padStart(3,'0');
     return formatted.split('');
 }
+

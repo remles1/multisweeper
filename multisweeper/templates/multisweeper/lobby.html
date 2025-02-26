@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load custom_filters %}
 
 {% block headblock %}
         {% load static %}
@@ -60,6 +61,24 @@
             --corner-bottom-right-image: url("{% static 'multisweeper/images/corner-bottom-right.png' %}");
         }
 
+        .seat {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 15px solid;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            margin-right: 5px;
+        }
+        .triangle-0 { border-left-color: red; }
+        .triangle-1 { border-left-color: yellow; }
+        .triangle-2 { border-left-color: blue; }
+        .triangle-3 { border-left-color: green; }
     </style>
     <link rel="stylesheet" href="{% static 'multisweeper/css/gamestyle.css' %}">
 {% endblock %}
@@ -108,7 +127,25 @@
 
     </div>
 
-    <div id="lobby-info" class="side-container"></div>
+    <div id="lobby-info" class="side-container">
+        <div id="player-seats">
+
+            {% for seat_number in lobby.seats.keys %}
+            <div id="seat-{{ seat_number }}"class="seat" data-seat="{{ seat_number }}" onclick="chooseSeat({{ seat_number }})">
+                <div class="triangle triangle-{{ seat_number }}"></div>
+                <span id="player-seat-{{ seat_number }}"></span>
+<!--                {% if not player_seated %}-->
+<!--                    <span id="player-{{ seat_number }}">Seat {{ seat_number }}</span>-->
+<!--                {% elif user.is_authenticated %}-->
+<!--                    <span id="player-{{ seat_number }}">{{ player_seated.username }}</span>-->
+<!--                {% else %}-->
+<!--                    <span id="player-{{ seat_number }}">{{ request.session.username }}</span>-->
+<!--                {% endif %}-->
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 
 </div>
 
@@ -120,6 +157,7 @@
 <script>
     const lobby_id = "{{ lobby_id }}";
     const mine_count = "{{ mine_count }}";
+
 </script>
 
 <script src="{% static 'multisweeper/js/game.js' %}"></script>
