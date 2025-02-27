@@ -139,7 +139,7 @@ function render_seats(data){
         const player_color_icon = document.getElementById(`player-color-icon-${key}`);
         const player_seat_span = document.getElementById(`player-seat-${key}`);
         const owner_player_controls = document.getElementById(`owner-player-controls-${key}`);
-        const current_username = `${seats[key]}`;
+        const username_in_this_seat = `${seats[key]}`;
 
         // player colors and turn indicator
         if(active_seat === key){
@@ -149,22 +149,31 @@ function render_seats(data){
             player_color_icon.className = `circle circle-${key}`;
         }
 
-        if(username === owner){
 
+        // if the username is the owner (username is a global variable assigned to the file),
+        // show owner controls along every seat
+        if(username === owner){
             owner_player_controls.style.display = 'inline';
         }
         else {
             owner_player_controls.style.display = 'none';
         }
 
-        if(current_username === 'null'){
+
+        if(username_in_this_seat === 'null'){
             player_seat_span.innerHTML = `Empty seat #${parseInt(key)+1}`;
+
+            // if the seat is empty, hide the owner controls
+            owner_player_controls.style.display = 'none';
         }
         else{
-            player_seat_span.innerHTML = `${current_username}`;
+            player_seat_span.innerHTML = `${username_in_this_seat}`;
         }
-        if( current_username === owner){
-            player_seat_span.innerHTML = `${current_username} OWNER`;
+        if(username_in_this_seat === owner){
+
+            player_seat_span.innerHTML = `${username_in_this_seat} OWNER`;
+
+            //dont display owner controls for owners' seat
             owner_player_controls.style.display = 'none';
         }
 
