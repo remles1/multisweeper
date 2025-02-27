@@ -89,7 +89,9 @@ class Lobby:
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
             self.current_players -= 1
+            # TODO dodać w tym miejscu usuwanie lobby jeżeli current_players == 0
             self.players.remove(player_connection.player)
+            self.owner = self.players[0]
             self.seats = {k: (None if v is player_connection.player else v) for k, v in self.seats.items()}
             del self.player_connections[player_connection.player]
             if isinstance(player_connection.player, User):

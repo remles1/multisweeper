@@ -1,4 +1,4 @@
-#TODO dostosowac logike do multiplayer
+# TODO wyczyscic ze zbednego kodu i pól
 
 import random
 from datetime import datetime
