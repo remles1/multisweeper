@@ -140,11 +140,17 @@ function render_seats(data){
         else {
             player_color_icon.className = `circle circle-${key}`;
         }
+
         if(seats[key] === null){
-            player_seat_span.innerHTML = `Empty seat ${parseInt(key)+1}`;
+            player_seat_span.innerHTML = `Empty seat #${parseInt(key)+1}`;
         }
         else {
-            player_seat_span.innerHTML = `${seats[key]}`;
+            if( seats[key] === data["owner"]){
+                player_seat_span.innerHTML = `${seats[key]} OWNER`;
+            }
+            else{
+                player_seat_span.innerHTML = `${seats[key]}`;
+            }
         }
 
     }
@@ -208,6 +214,14 @@ function cellMouseUp(event) {
 function chooseSeat(seat){
     const message = JSON.stringify({
         type: "choose_seat",
+        message: seat,
+    })
+    socket.send(message)
+}
+
+function promoteToOwner(seat){
+    const message = JSON.stringify({
+        type: "promote_to_owner",
         message: seat,
     })
     socket.send(message)

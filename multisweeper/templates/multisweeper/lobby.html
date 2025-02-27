@@ -59,6 +59,7 @@
             --t-right-image: url("{% static 'multisweeper/images/t-right.png' %}");
             --corner-bottom-left-image: url("{% static 'multisweeper/images/corner-bottom-left.png' %}");
             --corner-bottom-right-image: url("{% static 'multisweeper/images/corner-bottom-right.png' %}");
+            --owner: url("{% static 'multisweeper/images/owner.png' %}")
         }
 
         .seat {
@@ -70,9 +71,9 @@
         .triangle {
             width: 0;
             height: 0;
-            border-left: 15px solid;
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
+            border-left: 10px solid;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
             margin-right: 5px;
         }
         .triangle-0 { border-left-color: red; }
@@ -81,8 +82,8 @@
         .triangle-3 { border-left-color: green; }
 
         .circle {
-            width: 15px;
-            height: 15px;
+            width: 8px;
+            height: 8px;
             background-color: #000; /* Default color */
             border-radius: 50%;
             margin-right: 5px;
@@ -155,9 +156,13 @@
         <div id="player-seats">
 
             {% for seat_number in lobby.seats.keys %}
-            <div id="seat-{{ seat_number }}" class="seat" data-seat="{{ seat_number }}" onclick="chooseSeat({{ seat_number }})">
+            <div id="seat-{{ seat_number }}" class="seat" data-seat="{{ seat_number }}" >
                 <div id="player-color-icon-{{ seat_number }}" class="circle circle-{{ seat_number }}"></div>
-                <span id="player-seat-{{ seat_number }}"></span>
+                <span id="player-seat-{{ seat_number }}" onclick="chooseSeat({{ seat_number }})" ></span>
+
+                <span id="owner-player-controls-{{ seat_number }}" class="owner-player-controls">
+                    <span class="promote-to-owner" onclick="promoteToOwner({{ seat_number }})" ></span>
+                </span>
             </div>
             {% endfor %}
         </div>

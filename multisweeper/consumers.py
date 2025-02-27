@@ -34,9 +34,11 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             y = int(split_message[0])
             x = int(split_message[1])
             await self.lobby.left_click_game(y, x, self)
-            await self.lobby.broadcast_board_and_seats()
+            await self.lobby.broadcast_board_and_interface()
         elif text_data_json["type"] == "choose_seat":
             await self.lobby.choose_seat(self, text_data_json["message"])
+        elif text_data_json["type"] == "promote_to_owner":
+            await self.lobby.promote_to_owner(self, text_data_json["message"])
 
     async def disconnect(self, close_code):
         await self.lobby.remove_player(self)

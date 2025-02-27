@@ -302,3 +302,18 @@
     background-size: 100% 100%;
     background-image: var(--corner-bottom-right-image);
 }
+
+.owner-player-controls{
+    /*display: none;*/
+}
+
+.promote-to-owner{
+    margin-left: 5px;
+    display: flex;
+    width: 30px;
+    height: 30px;
+    background-size: 14px 7px;
+    background-image: var(--owner);
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Center the background image */
+}
