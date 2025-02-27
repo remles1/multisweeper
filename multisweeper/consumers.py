@@ -13,6 +13,7 @@ class PlayerConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         self.player = self.scope["user"]
+
         if not self.player.is_authenticated:
             self.player = self.scope["session"]["username"]
 
@@ -24,6 +25,13 @@ class PlayerConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         await self.lobby.broadcast(self.lobby.create_user_board_json())
+
+        username = self.player.username if isinstance(self.player, User) else self.player
+
+        await self.send(text_data=json.dumps({
+            "type": "username",
+            "message": f"{username}"
+        }))
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)

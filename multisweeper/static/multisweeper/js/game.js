@@ -6,6 +6,7 @@ let timerInterval = null;
 let minesLeft = mine_count;
 mines_left_update_counter(minesLeft);
 update_seconds_counter(0)
+let username = null;
 
 
 
@@ -66,7 +67,10 @@ socket.onopen = function (e) {
 socket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     if(data["type"] === "seats"){
-        render_seats(data)
+        render_seats(data);
+    }
+    if(data["type"] === "username"){
+        username = data["message"];
     }
     else if(data["type"] === "user_board"){
         let user_board = JSON.parse(data["message"])
@@ -129,11 +133,15 @@ function render_user_board(user_board, user_board_mapped) {
 function render_seats(data){
     const seats = data["message"];
     const active_seat = `${data["active_seat"]}`;
+    const owner = `${data["owner"]}`;
     for(let key in seats){
-        // const player_seat_div = document.getElementById(`seat-${key}`)
+
         const player_color_icon = document.getElementById(`player-color-icon-${key}`);
         const player_seat_span = document.getElementById(`player-seat-${key}`);
+        const owner_player_controls = document.getElementById(`owner-player-controls-${key}`);
+        const current_username = `${seats[key]}`;
 
+        // player colors and turn indicator
         if(active_seat === key){
             player_color_icon.className = `triangle triangle-${key}`;
         }
@@ -141,17 +149,25 @@ function render_seats(data){
             player_color_icon.className = `circle circle-${key}`;
         }
 
-        if(seats[key] === null){
-            player_seat_span.innerHTML = `Empty seat #${parseInt(key)+1}`;
+        if(username === owner){
+
+            owner_player_controls.style.display = 'inline';
         }
         else {
-            if( seats[key] === data["owner"]){
-                player_seat_span.innerHTML = `${seats[key]} OWNER`;
-            }
-            else{
-                player_seat_span.innerHTML = `${seats[key]}`;
-            }
+            owner_player_controls.style.display = 'none';
         }
+
+        if(current_username === 'null'){
+            player_seat_span.innerHTML = `Empty seat #${parseInt(key)+1}`;
+        }
+        else{
+            player_seat_span.innerHTML = `${current_username}`;
+        }
+        if( current_username === owner){
+            player_seat_span.innerHTML = `${current_username} OWNER`;
+            owner_player_controls.style.display = 'none';
+        }
+
 
     }
 }

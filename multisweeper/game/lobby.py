@@ -17,7 +17,7 @@ lobbies = {}
 
 class Lobby:
     lobby_id: str
-    owner: User | str
+    owner: Union[User, str]
     game_started: bool = False
     max_players: int
     current_players: int = 0
@@ -113,7 +113,6 @@ class Lobby:
                 self.player_scores[player_connection.player] += 1
 
     async def broadcast(self, content):
-        print(self.owner)
         await self.channel_layer.group_send(
             self.group_name,
             {
@@ -127,6 +126,7 @@ class Lobby:
             self.game_started = True
 
     async def promote_to_owner(self, player_connection: 'PlayerConsumer', seat: int):
+        print(player_connection.player)
         if player_connection.player is self.owner and self.seats[seat] is not None:
             self.owner = self.seats[seat]
         await self.broadcast(self.create_seats_json())
