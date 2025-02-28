@@ -10,6 +10,8 @@ from multisweeper.game.lobby import lobbies, Lobby
 def index(request):
     return render(request, "multisweeper/index.html", {"lobbies": lobbies})
 
+def lobby_full(request):
+    return render(request, "multisweeper/lobby.html")
 
 def create_lobby(request):
     if request.method == 'POST':
@@ -26,7 +28,7 @@ def lobby(request, lobby_id):
         raise Http404("No such lobby")
 
     if not lobbies[lobby_id].current_players < lobbies[lobby_id].max_players:
-        raise Http404("lobby full")
+        return render(request, "multisweeper/lobby-full.html")
 
     if not request.user.is_authenticated:
         if 'username' not in request.session:

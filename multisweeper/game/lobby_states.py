@@ -1,11 +1,8 @@
 import asyncio
 from abc import ABC, abstractmethod
-
-from django.contrib.auth.models import User
-
 from typing import TYPE_CHECKING
 
-from django.shortcuts import redirect
+from django.contrib.auth.models import User
 
 from multisweeper.models import PlayerProfile
 
@@ -36,7 +33,8 @@ class State(ABC):
 class LobbyWaitingState(State):
     async def add_player(self, player_connection: 'PlayerConsumer'):
         async with self.lobby.lock:
-            if type(self) is not type(self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
+            if type(self) is not type(
+                    self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
             if self.lobby.current_players >= self.lobby.max_players:
@@ -63,7 +61,8 @@ class LobbyWaitingState(State):
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         async with self.lobby.lock:
-            if type(self) is not type(self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
+            if type(self) is not type(
+                    self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
             self.lobby.current_players -= 1
@@ -88,11 +87,13 @@ class LobbyWaitingState(State):
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
         async with self.lobby.lock:
-            if type(self) is not type(self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
+            if type(self) is not type(
+                    self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
             if self.lobby.seats[seat_number] is None:
-                self.lobby.seats = {k: (None if v is player_connection.player else v) for k, v in self.lobby.seats.items()}
+                self.lobby.seats = {k: (None if v is player_connection.player else v) for k, v in
+                                    self.lobby.seats.items()}
                 self.lobby.seats[seat_number] = player_connection.player
 
             await self.lobby.broadcast(self.lobby.create_seats_json())
@@ -101,11 +102,13 @@ class LobbyWaitingState(State):
 class LobbyGameInProgressState(State):
     async def add_player(self, player_connection: 'PlayerConsumer'):
         async with self.lobby.lock:
-            if type(self) is not type(self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
+            if type(self) is not type(
+                    self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
             if player_connection.player not in self.lobby.players:
-                return redirect(f'/lobby-full')
+                pass
+                # TODO tutaj trzeba websocketem przesłać
 
             self.lobby.current_players += 1
 
@@ -120,7 +123,8 @@ class LobbyGameInProgressState(State):
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         async with self.lobby.lock:
-            if type(self) is not type(self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
+            if type(self) is not type(
+                    self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
             self.lobby.current_players -= 1

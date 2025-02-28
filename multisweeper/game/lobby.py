@@ -47,12 +47,9 @@ class Lobby:
         self.group_name = f'lobby_{self.lobby_id}'
 
     async def auto_destruct(self):
-        #TODO zmien logike, ta nie dziala przy odswiezaniu
-        # pass
         await asyncio.sleep(10)
         if self.lobby_id in lobbies and self.current_players == 0:
             del lobbies[self.lobby_id]
-
 
     async def change_state(self, state: State):
         self.state = state
