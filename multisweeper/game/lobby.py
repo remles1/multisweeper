@@ -2,11 +2,11 @@ import asyncio
 import json
 from typing import List, TYPE_CHECKING, Dict, Union
 
-from asgiref.sync import sync_to_async
 from channels.layers import get_channel_layer
 from django.contrib.auth.models import User
 
 from multisweeper.game.game_logic import GameLogic
+from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState
 from multisweeper.models import PlayerProfile
 
 if TYPE_CHECKING:
@@ -17,8 +17,8 @@ lobbies = {}
 
 class Lobby:
     lobby_id: str
+    state: State
     owner: Union[User, str]
-    game_started: bool = False
     max_players: int
     current_players: int = 0
     players: List[Union[User, str]]  # str is for the guest
@@ -31,6 +31,7 @@ class Lobby:
 
     def __init__(self, lobby_id, max_players=2):
         self.lobby_id = lobby_id
+        self.state = LobbyWaitingState(self)
         self.max_players = max_players
         self.players = []
         self.seats = {}
@@ -45,66 +46,32 @@ class Lobby:
         self.channel_layer = get_channel_layer()
         self.group_name = f'lobby_{self.lobby_id}'
 
+    async def auto_destruct(self):
+        #TODO zmien logike, ta nie dziala przy odswiezaniu
+        pass
+        # await asyncio.sleep(5)
+        # if self.current_players == 0:
+        #     # TODO dodaj tu bezpieczne usuwanie
+        #     del lobbies[self.lobby_id]
+        #     del self
+
+    async def change_state(self, state: State):
+        self.state = state
+
     async def add_player(self, player_connection: 'PlayerConsumer'):
-        """
-        so far:
-            updates current_players,
-            appends player to self.players
-            appends connection to connections
-            adds a profile if is a User instance
-            sets score to 0 for player
-
-            waits for user to choose their seat.
-        :param player_connection:
-        :return:
-        """
-        async with self.lock:
-            if self.current_players >= self.max_players:
-                return
-            if len(self.players) == 0:
-                self.owner = player_connection.player
-            self.current_players += 1
-            self.players.append(player_connection.player)
-            self.player_connections[player_connection.player] = player_connection
-
-            if isinstance(player_connection.player, User):
-                self.player_profiles[player_connection.player] = await PlayerProfile.objects.aget(user=player_connection.player)
-
-            self.player_scores[player_connection.player] = 0
-
-            await self.channel_layer.group_add(
-                self.group_name,
-                player_connection.channel_name
-            )
-
-            await self.broadcast(self.create_seats_json())
-
-    async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
-        if self.seats[seat_number] is None:
-            self.seats = {k: (None if v is player_connection.player else v) for k, v in self.seats.items()}
-            self.seats[seat_number] = player_connection.player
-
-        await self.broadcast(self.create_seats_json())
+        await self.state.add_player(player_connection)
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
-        async with self.lock:
-            self.current_players -= 1
-            # TODO dodać w tym miejscu usuwanie lobby jeżeli current_players == 0
-            self.players.remove(player_connection.player)
-            self.owner = self.players[0]
-            self.seats = {k: (None if v is player_connection.player else v) for k, v in self.seats.items()}
-            del self.player_connections[player_connection.player]
-            if isinstance(player_connection.player, User):
-                del self.player_profiles[player_connection.player]
-            del self.player_scores[player_connection.player]
+        await self.state.remove_player(player_connection)
 
-            await self.channel_layer.group_discard(
-                self.group_name,
-                player_connection.channel_name
-            )
+    async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
+        await self.state.choose_seat(player_connection, seat_number)
 
     async def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
         async with self.lock:
+            if not isinstance(self.state, LobbyGameInProgressState):
+                return
+
             if player_connection.player != self.seats[self.active_seat] or self.game_instance.user_board[y][x] != "c":
                 return
             self.game_instance.cell_left_clicked(y, x, self.active_seat)
@@ -115,6 +82,7 @@ class Lobby:
                 self.player_scores[player_connection.player] += 1
 
     async def broadcast(self, content):
+        print(self.player_scores)
         await self.channel_layer.group_send(
             self.group_name,
             {
@@ -124,11 +92,11 @@ class Lobby:
         )
 
     async def start_game(self, player_connection: 'PlayerConsumer'):
-        if player_connection.player is self.owner:
-            self.game_started = True
+        async with self.lock:
+            if player_connection.player is self.owner:
+                self.state = LobbyGameInProgressState(self)
 
     async def promote_to_owner(self, player_connection: 'PlayerConsumer', seat: int):
-        print(player_connection.player)
         if player_connection.player is self.owner and self.seats[seat] is not None:
             self.owner = self.seats[seat]
         await self.broadcast(self.create_seats_json())

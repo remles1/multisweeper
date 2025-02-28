@@ -47,6 +47,8 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             await self.lobby.choose_seat(self, text_data_json["message"])
         elif text_data_json["type"] == "promote_to_owner":
             await self.lobby.promote_to_owner(self, text_data_json["message"])
+        elif text_data_json["type"] == "start_game":
+            await self.lobby.start_game(self)
 
     async def disconnect(self, close_code):
         await self.lobby.remove_player(self)

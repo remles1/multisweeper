@@ -252,6 +252,13 @@ function promoteToOwner(seat){
     socket.send(message)
 }
 
+function startGame(){
+    const message = JSON.stringify({
+        type: "start_game",
+    })
+    socket.send(message)
+}
+
 function timer() {
     let seconds = 0;
     timerInterval=setInterval(()=>{
