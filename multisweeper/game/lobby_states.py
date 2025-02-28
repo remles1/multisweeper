@@ -1,3 +1,4 @@
+import asyncio
 from abc import ABC, abstractmethod
 
 from django.contrib.auth.models import User
@@ -82,7 +83,7 @@ class LobbyWaitingState(State):
                 player_connection.channel_name
             )
             if self.lobby.current_players == 0:
-                await self.lobby.auto_destruct()
+                asyncio.create_task(self.lobby.auto_destruct())
                 return
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
@@ -132,7 +133,7 @@ class LobbyGameInProgressState(State):
             )
 
             if self.lobby.current_players == 0:
-                await self.lobby.auto_destruct()
+                asyncio.create_task(self.lobby.auto_destruct())
                 return
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
