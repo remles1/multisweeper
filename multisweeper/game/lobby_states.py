@@ -1,4 +1,5 @@
 import asyncio
+import json
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
@@ -106,14 +107,16 @@ class LobbyGameInProgressState(State):
                     self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
-            if player_connection.player not in self.lobby.players:
-                pass
-                # TODO tutaj trzeba websocketem przesłać
-
             self.lobby.current_players += 1
 
+            #  redirect is handled in the view, so I think its safe to delete that below
+            if player_connection.player not in self.lobby.players:
+                asyncio.create_task(player_connection.send(text_data=json.dumps({
+                    "type": "game_in_progress_redirect",
+                })))
+                return
+
             self.lobby.player_connections[player_connection.player] = player_connection
-            # TODO dodaj zawiadomienie o tym że player wyszedł (może wróci, przerwanie internetu czy coś)
             await self.lobby.channel_layer.group_add(
                 self.lobby.group_name,
                 player_connection.channel_name
@@ -142,3 +145,7 @@ class LobbyGameInProgressState(State):
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
         return
+
+
+class LobbyGameOverState(LobbyWaitingState):
+    pass

@@ -69,8 +69,16 @@ socket.onmessage = function (e) {
     if(data["type"] === "seats"){
         render_seats(data);
     }
-    if(data["type"] === "username"){
+    else if(data["type"] === "game_over"){
+        let winner_username = data["winner_username"]
+        console.log("game_over fired");
+        alert(`${winner_username} is the winner! Congratulations!`);
+    }
+    else if(data["type"] === "username"){
         username = data["message"];
+    }
+    else if(data["type"] === "game_in_progress_redirect"){
+        location.replace("/game-in-progress/");
     }
     else if(data["type"] === "user_board"){
         let user_board = JSON.parse(data["message"])
