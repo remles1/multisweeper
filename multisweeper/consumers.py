@@ -52,7 +52,6 @@ class PlayerConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         await self.lobby.remove_player(self)
-        # TODO, jezeli gracz wyjdzie po tym jak rozgrywka sie rozpoczela, czekaj az dolaczy spowrotem
         await self.lobby.broadcast(self.lobby.create_seats_json())
 
     async def join_lobby(self, lobby_id):

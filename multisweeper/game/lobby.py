@@ -1,12 +1,14 @@
 import asyncio
+import datetime
 import json
+import math
 from typing import List, TYPE_CHECKING, Dict, Union
 
 from channels.layers import get_channel_layer
 from django.contrib.auth.models import User
 
 from multisweeper.game.game_logic import GameLogic
-from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState
+from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState, LobbyGameOverState
 from multisweeper.models import PlayerProfile
 
 if TYPE_CHECKING:
@@ -27,9 +29,10 @@ class Lobby:
     player_profiles: Dict[Union[User, str], PlayerProfile | None]
     player_connections: Dict[Union[User, str], 'PlayerConsumer']
     active_seat: int = 0
+    mine_count: int
     game_instance: GameLogic
 
-    def __init__(self, lobby_id, max_players=2):
+    def __init__(self, lobby_id, max_players, mine_count):
         self.lobby_id = lobby_id
         self.state = LobbyWaitingState(self)
         self.max_players = max_players
@@ -40,7 +43,8 @@ class Lobby:
         self.player_profiles = {}
         self.player_connections = {}
         self.player_scores = {}
-        self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=20)
+        self.mine_count = mine_count
+        self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=mine_count)
         self.lock = asyncio.Lock()
 
         self.channel_layer = get_channel_layer()
@@ -76,9 +80,15 @@ class Lobby:
                 self.active_seat = (self.active_seat + 1) % self.max_players
             else:
                 self.player_scores[player_connection.player] += 1
+                if self.player_scores[player_connection.player] > math.floor(self.game_instance.mine_count / 2):
+                    self.state = LobbyGameOverState(self)
+                    await self.broadcast(self.create_game_over_json(
+                        player_connection.player.username if isinstance(player_connection.player,
+                                                                        User) else player_connection.player))
 
     async def broadcast(self, content):
-        print(self.player_scores)
+        print(datetime.datetime.now(), ' ', self.player_scores, self.state)
+
         await self.channel_layer.group_send(
             self.group_name,
             {
@@ -89,8 +99,19 @@ class Lobby:
 
     async def start_game(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
-            if player_connection.player is self.owner:
-                self.state = LobbyGameInProgressState(self)
+            if player_connection.player is self.owner and not isinstance(self.state, LobbyGameInProgressState):
+                if len(self.players) == self.max_players:
+                    if isinstance(self.state, LobbyGameOverState):
+                        self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16,
+                                                       mine_count=self.mine_count)
+
+                        self.game_rematch_cleanup()
+
+                    self.state = LobbyGameInProgressState(self)
+                    await self.broadcast_board_and_interface()
+
+    def game_rematch_cleanup(self):
+        self.player_scores = dict(zip(self.players, [0] * len(self.players)))
 
     async def promote_to_owner(self, player_connection: 'PlayerConsumer', seat: int):
         if player_connection.player is self.owner and self.seats[seat] is not None:
@@ -125,5 +146,12 @@ class Lobby:
             "owner": self.owner.username if isinstance(self.owner, User) else self.owner,
             "active_seat": self.active_seat,
             "message": temp_seats,
+        })
+        return content
+
+    def create_game_over_json(self, winner: str):
+        content = json.dumps({
+            "type": "game_over",
+            "winner_username": f"{winner}"
         })
         return content
