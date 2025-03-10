@@ -146,6 +146,14 @@ function render_seats_and_controls(data){
     const seats = data["message"];
     const active_seat = `${data["active_seat"]}`;
     const owner = `${data["owner"]}`;
+    const start_game_button = document.getElementById("start-game-button");
+    if(username === owner && state !== 'LobbyGameInProgressState'){
+        start_game_button.style.display = 'inline';
+    }
+    else {
+        start_game_button.style.display = 'none';
+    }
+
     for(let key in seats){
 
         const player_color_icon = document.getElementById(`player-color-icon-${key}`);
