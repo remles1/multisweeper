@@ -61,7 +61,6 @@ class Lobby:
 
     async def add_player(self, player_connection: 'PlayerConsumer'):
         await self.state.add_player(player_connection)
-        await self.broadcast(self.create_state_json())
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         await self.state.remove_player(player_connection)

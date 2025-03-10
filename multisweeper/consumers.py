@@ -33,6 +33,8 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             "message": f"{username}"
         }))
 
+        await self.send(self.lobby.create_state_json())
+
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
 
