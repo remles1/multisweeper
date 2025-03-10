@@ -1,11 +1,13 @@
 import uuid
 
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import render, redirect
 
 from multisweeper.game.lobby import lobbies, Lobby
 from multisweeper.game.lobby_states import LobbyGameInProgressState
+from multisweeper.utils.utils import username_in_player_list
 
 
 def index(request):
@@ -46,6 +48,16 @@ def lobby(request, lobby_id):
 
         if scope_user not in lobbies[lobby_id].players:
             return render(request, "multisweeper/game-in-progress.html")
+
+    else:
+        scope_user = request.session["username"] if not request.user.is_authenticated else request.user
+
+        if request.user.is_authenticated:
+            if username_in_player_list(scope_user.username, lobbies[lobby_id].players):
+                return render(request, "multisweeper/player-already-in-lobby.html")
+        else:
+            if username_in_player_list(scope_user, lobbies[lobby_id].players):
+                return render(request, "multisweeper/player-already-in-lobby.html")
 
     return render(request, "multisweeper/lobby.html", {
         "lobby_id": lobby_id,

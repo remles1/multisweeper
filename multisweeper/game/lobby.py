@@ -110,7 +110,6 @@ class Lobby:
 
     async def broadcast(self, content):
         print(datetime.datetime.now(), ' ', self.player_scores, self.state)
-        print(self.owner)
         await self.channel_layer.group_send(
             self.group_name,
             {
