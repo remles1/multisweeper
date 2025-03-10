@@ -57,9 +57,11 @@ class Lobby:
 
     async def change_state(self, state: State):
         self.state = state
+        await self.broadcast(self.create_state_json())
 
     async def add_player(self, player_connection: 'PlayerConsumer'):
         await self.state.add_player(player_connection)
+        await self.broadcast(self.create_state_json())
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         await self.state.remove_player(player_connection)
@@ -81,21 +83,10 @@ class Lobby:
             else:
                 self.player_scores[player_connection.player] += 1
                 if self.player_scores[player_connection.player] > math.floor(self.game_instance.mine_count / 2):
-                    self.state = LobbyGameOverState(self)
+                    await self.change_state(LobbyGameOverState(self))
                     await self.broadcast(self.create_game_over_json(
                         player_connection.player.username if isinstance(player_connection.player,
                                                                         User) else player_connection.player))
-
-    async def broadcast(self, content):
-        print(datetime.datetime.now(), ' ', self.player_scores, self.state)
-
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                'type': 'send_message',
-                'content': content
-            }
-        )
 
     async def start_game(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
@@ -107,7 +98,7 @@ class Lobby:
 
                         self.game_rematch_cleanup()
 
-                    self.state = LobbyGameInProgressState(self)
+                    await self.change_state(LobbyGameInProgressState(self))
                     await self.broadcast_board_and_interface()
 
     def game_rematch_cleanup(self):
@@ -117,6 +108,17 @@ class Lobby:
         if player_connection.player is self.owner and self.seats[seat] is not None:
             self.owner = self.seats[seat]
         await self.broadcast(self.create_seats_json())
+
+    async def broadcast(self, content):
+        print(datetime.datetime.now(), ' ', self.player_scores, self.state)
+
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'send_message',
+                'content': content
+            }
+        )
 
     async def broadcast_board_and_interface(self):
         await self.broadcast(self.create_user_board_json())
@@ -130,6 +132,13 @@ class Lobby:
             "over": self.game_instance.game_over,
             "time": self.game_instance.time_spent,
             "message": user_board_json
+        })
+        return content
+
+    def create_state_json(self):
+        content = json.dumps({
+            "type": "state_change",
+            "message": f"{type(self.state).__name__}"
         })
         return content
 
