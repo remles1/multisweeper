@@ -89,7 +89,7 @@ class Lobby:
 
     async def start_game(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
-            if player_connection.player is self.owner and not isinstance(self.state, LobbyGameInProgressState):
+            if player_connection.player == self.owner and not isinstance(self.state, LobbyGameInProgressState):
                 if len(self.players) == self.max_players:
                     if isinstance(self.state, LobbyGameOverState):
                         self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16,
@@ -104,13 +104,13 @@ class Lobby:
         self.player_scores = dict(zip(self.players, [0] * len(self.players)))
 
     async def promote_to_owner(self, player_connection: 'PlayerConsumer', seat: int):
-        if player_connection.player is self.owner and self.seats[seat] is not None:
+        if player_connection.player == self.owner and self.seats[seat] is not None and not isinstance(self.state, LobbyGameInProgressState):
             self.owner = self.seats[seat]
         await self.broadcast(self.create_seats_json())
 
     async def broadcast(self, content):
         print(datetime.datetime.now(), ' ', self.player_scores, self.state)
-
+        print(self.owner)
         await self.channel_layer.group_send(
             self.group_name,
             {
@@ -136,7 +136,7 @@ class Lobby:
 
     def create_state_json(self):
         content = json.dumps({
-            "type": "state_change",
+            "type": "state",
             "message": f"{type(self.state).__name__}"
         })
         return content

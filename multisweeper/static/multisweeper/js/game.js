@@ -7,6 +7,7 @@ let minesLeft = mine_count;
 mines_left_update_counter(minesLeft);
 update_seconds_counter(0)
 let username = null;
+let state = ""
 
 
 
@@ -67,12 +68,15 @@ socket.onopen = function (e) {
 socket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     if(data["type"] === "seats"){
-        render_seats(data);
+        render_seats_and_controls(data);
     }
     else if(data["type"] === "game_over"){
         let winner_username = data["winner_username"]
         console.log("game_over fired");
         alert(`${winner_username} is the winner! Congratulations!`);
+    }
+    else if(data["type"] === "state"){
+        state = data["message"];
     }
     else if(data["type"] === "username"){
         username = data["message"];
@@ -138,7 +142,7 @@ function render_user_board(user_board, user_board_mapped) {
     mines_left_update_counter(minesLeft)
 }
 
-function render_seats(data){
+function render_seats_and_controls(data){
     const seats = data["message"];
     const active_seat = `${data["active_seat"]}`;
     const owner = `${data["owner"]}`;
@@ -160,7 +164,7 @@ function render_seats(data){
 
         // if the username is the owner (username is a global variable assigned to the file),
         // show owner controls along every seat
-        if(username === owner){
+        if(username === owner && state !== 'LobbyGameInProgressState'){
             owner_player_controls.style.display = 'inline';
         }
         else {
@@ -178,6 +182,7 @@ function render_seats(data){
             player_seat_span.innerHTML = `${username_in_this_seat}`;
         }
         if(username_in_this_seat === owner){
+
 
             player_seat_span.innerHTML = `${username_in_this_seat} OWNER`;
 
