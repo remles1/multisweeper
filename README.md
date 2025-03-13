@@ -21,6 +21,6 @@
 	- [x] Display players inside lobby and their ELOs
 	- [x] Join lobby
 
- Not an exhaustive list and more will come
+ Not an exhaustive list and more to come
 
 
