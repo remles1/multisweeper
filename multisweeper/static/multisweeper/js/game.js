@@ -156,6 +156,10 @@ function render_seats_and_controls(data){
     }
 
     for(let key in seats){
+        const seat_div = document.getElementById(`seat-${key}`);
+        const score_div = document.getElementById(`score-${key}`);
+        score_div.innerHTML = 'SCORE: 10';
+
 
         const player_color_icon = document.getElementById(`player-color-icon-${key}`);
         const player_seat_span = document.getElementById(`player-seat-${key}`);

@@ -157,12 +157,18 @@
 
             {% for seat_number in lobby.seats.keys %}
             <div id="seat-{{ seat_number }}" class="seat" data-seat="{{ seat_number }}" >
-                <div id="player-color-icon-{{ seat_number }}" class="circle circle-{{ seat_number }}"></div>
-                <span id="player-seat-{{ seat_number }}" onclick="chooseSeat({{ seat_number }})" ></span>
+                <div class="seat-info">
+                    <div class="turn-and-username">
+                        <div id="player-color-icon-{{ seat_number }}" class="circle circle-{{ seat_number }}"></div>
+                        <span id="player-seat-{{ seat_number }}" onclick="chooseSeat({{ seat_number }})" ></span>
+                    </div>
 
-                <span id="owner-player-controls-{{ seat_number }}" class="owner-player-controls">
-                    <span class="promote-to-owner" onclick="promoteToOwner({{ seat_number }})" ></span>
-                </span>
+                    <span id="owner-player-controls-{{ seat_number }}" class="owner-player-controls">
+                        <span class="promote-to-owner" onclick="promoteToOwner({{ seat_number }})" ></span>
+                    </span>
+                </div>
+
+                <div id="score-{{ seat_number }}" class="seat-score"></div>
             </div>
             {% endfor %}
         </div>
