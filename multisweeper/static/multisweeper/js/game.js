@@ -72,9 +72,14 @@ socket.onmessage = function (e) {
         render_seats_and_controls(data);
     }
     else if(data["type"] === "game_over"){
-        let winner_username = data["winner_username"]
-        console.log("game_over fired");
-        alert(`${winner_username} is the winner! Congratulations!`);
+        if (data["draw"]){
+            alert('draw');
+        }
+        else{
+            let winner_username = data["winner_username"]
+            alert(`${winner_username} is the winner! Congratulations!`);
+        }
+
     }
     else if(data["type"] === "state"){
         state = data["message"];
@@ -144,7 +149,8 @@ function render_user_board(user_board, user_board_mapped) {
 }
 
 function render_seats_and_controls(data){
-    const seats = data["message"];
+    const seats = data["seats"];
+    const scores = data["scores"];
     const active_seat = `${data["active_seat"]}`;
     const owner = `${data["owner"]}`;
     const start_game_button = document.getElementById("start-game-button");
@@ -156,11 +162,7 @@ function render_seats_and_controls(data){
     }
 
     for(let key in seats){
-        const seat_div = document.getElementById(`seat-${key}`);
         const score_div = document.getElementById(`score-${key}`);
-        score_div.innerHTML = 'SCORE: 10';
-
-
         const player_color_icon = document.getElementById(`player-color-icon-${key}`);
         const player_seat_span = document.getElementById(`player-seat-${key}`);
         const owner_player_controls = document.getElementById(`owner-player-controls-${key}`);
@@ -201,6 +203,12 @@ function render_seats_and_controls(data){
 
             //dont display owner controls for owners' seat
             owner_player_controls.style.display = 'none';
+        }
+
+        if (scores[key] === undefined) {
+            score_div.innerHTML = "SCORE: 0"; // or any default value
+        } else {
+            score_div.innerHTML = `SCORE: ${scores[key]}`;
         }
 
 

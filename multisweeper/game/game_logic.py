@@ -212,7 +212,6 @@ class GameLogic:
 
         if not self.logic_board[y][x] == 0:
             self.user_board[y][x] = str(self.logic_board[y][x])  # not opened numbered cell
-            self.mines_clicked += 1
             return
         else:
             for dy in range(y - 1, y + 1 + 1):

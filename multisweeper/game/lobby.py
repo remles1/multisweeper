@@ -88,6 +88,9 @@ class Lobby:
                     await self.broadcast(self.create_game_over_json(
                         player_connection.player.username if isinstance(player_connection.player,
                                                                         User) else player_connection.player))
+                elif self.game_instance.mine_count == self.game_instance.mines_clicked:
+                    await self.change_state(LobbyGameOverState(self))
+                    await self.broadcast(self.create_game_over_json(None))
 
     async def start_game(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
@@ -106,7 +109,8 @@ class Lobby:
         self.player_scores = dict(zip(self.players, [0] * len(self.players)))
 
     async def promote_to_owner(self, player_connection: 'PlayerConsumer', seat: int):
-        if player_connection.player == self.owner and self.seats[seat] is not None and not isinstance(self.state, LobbyGameInProgressState):
+        if player_connection.player == self.owner and self.seats[seat] is not None and not isinstance(self.state,
+                                                                                                      LobbyGameInProgressState):
             self.owner = self.seats[seat]
         await self.broadcast(self.create_seats_json())
 
@@ -144,23 +148,31 @@ class Lobby:
 
     def create_seats_json(self):
         temp_seats = {}
+        temp_scores = {}
         for seat, player in self.seats.items():
             if isinstance(player, User):
                 temp_seats[seat] = player.username
+                if player is not None:
+                    temp_scores[seat] = self.player_scores[player]
             else:
                 temp_seats[seat] = player
+                if player is not None:
+                    temp_scores[seat] = self.player_scores[player]
 
         content = json.dumps({
             "type": "seats",
             "owner": self.owner.username if isinstance(self.owner, User) else self.owner,
             "active_seat": self.active_seat,
-            "message": temp_seats,
+            "seats": temp_seats,
+            "scores": temp_scores
         })
         return content
 
-    def create_game_over_json(self, winner: str):
+    def create_game_over_json(self, winner: str | None):
+        draw = self.game_instance.mine_count == self.game_instance.mines_clicked
         content = json.dumps({
             "type": "game_over",
+            "draw": draw,
             "winner_username": f"{winner}"
         })
         return content
