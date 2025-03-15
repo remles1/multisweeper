@@ -88,7 +88,7 @@ class Lobby:
                     await self.broadcast(self.create_game_over_json(
                         player_connection.player.username if isinstance(player_connection.player,
                                                                         User) else player_connection.player))
-                elif self.game_instance.mine_count == self.game_instance.mines_clicked:
+                elif self.game_instance.mine_count == self.game_instance.mines_clicked:  # draw
                     await self.change_state(LobbyGameOverState(self))
                     await self.broadcast(self.create_game_over_json(None))
 

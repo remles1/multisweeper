@@ -30,11 +30,9 @@ def create_lobby(request):
             max_players = form.cleaned_data['max_players']
             mine_count = form.cleaned_data['mine_count']
             ranked = form.cleaned_data['ranked']
-            print("Przed zmiana ranked:", ranked)
             if not request.user.is_authenticated:
                 ranked = False  # tylko zarejestrowany uzytkownik moze tworzyc gre rankingowa
             lobby_id = str(uuid.uuid4())
-            print("Po zmianie ranked:", ranked)
             lobby = Lobby(lobby_id=lobby_id, max_players=max_players, mine_count=mine_count, ranked=ranked)
 
             lobbies[lobby_id] = lobby
