@@ -111,3 +111,36 @@ form input[type="submit"]:hover {
 .button-form > *:not(button) {
     display: none;
 }
+
+/* Style the select dropdown to match text inputs */
+form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #3a3a3a; /* Same as text inputs */
+    color: #ffffff; /* Same as text inputs */
+    font-size: 14px; /* Same as text inputs */
+    appearance: none; /* Remove default arrow */
+    -webkit-appearance: none; /* Remove default arrow for Safari */
+    -moz-appearance: none; /* Remove default arrow for Firefox */
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom arrow */
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+    transition: border-color 0.3s ease; /* Same as text inputs */
+}
+
+/* Add focus effect to the select dropdown (same as text inputs) */
+form select:focus {
+    border-color: #4CAF50; /* Same as text inputs */
+    outline: none; /* Same as text inputs */
+}
+
+/* Style the options within the dropdown */
+form select option {
+    background-color: #3a3a3a; /* Same as text inputs */
+    color: #ffffff; /* Same as text inputs */
+    padding: 10px; /* Same as text inputs */
+}

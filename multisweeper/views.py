@@ -5,6 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import render, redirect
 
+from multisweeper.forms import LobbySettingsForm
 from multisweeper.game.lobby import lobbies, Lobby
 from multisweeper.game.lobby_states import LobbyGameInProgressState
 from multisweeper.utils.utils import username_in_player_list
@@ -24,10 +25,23 @@ def game_in_progress(request):
 
 def create_lobby(request):
     if request.method == 'POST':
-        lobby_id = str(uuid.uuid4())
-        lobby = Lobby(lobby_id=lobby_id, max_players=2, mine_count=10)
-        lobbies[lobby_id] = lobby
-        return redirect(f'/lobby/{lobby_id}')
+        form = LobbySettingsForm(request.POST)
+        if form.is_valid():
+            max_players = form.cleaned_data['max_players']
+            mine_count = form.cleaned_data['mine_count']
+            ranked = form.cleaned_data['ranked']
+            print("Przed zmiana ranked:", ranked)
+            if not request.user.is_authenticated:
+                ranked = False  # tylko zarejestrowany uzytkownik moze tworzyc gre rankingowa
+            lobby_id = str(uuid.uuid4())
+            print("Po zmianie ranked:", ranked)
+            lobby = Lobby(lobby_id=lobby_id, max_players=max_players, mine_count=mine_count, ranked=ranked)
+
+            lobbies[lobby_id] = lobby
+            return redirect(f'/lobby/{lobby_id}')
+    elif request.method == 'GET':
+        form = LobbySettingsForm()
+        return render(request, 'multisweeper/create-lobby.html', {'form': form})
     else:
         raise PermissionDenied()
 
@@ -48,7 +62,6 @@ def lobby(request, lobby_id):
 
         if scope_user not in lobbies[lobby_id].players:
             return render(request, "multisweeper/game-in-progress.html")
-
     else:
         scope_user = request.session["username"] if not request.user.is_authenticated else request.user
 

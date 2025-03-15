@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+
+    <h3 style="text-align: center">Create Lobby</h3>
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            {{ form.mine_count.label_tag }}
+            {{ form.mine_count }}
+        </p>
+        <p>
+            {{ form.max_players.label_tag }}
+            {{ form.max_players }}
+        </p>
+        {% if user.is_authenticated %}
+        <p>
+            <span style="display: flex; justify-content: space-between; flex: 1">
+                {{ form.ranked.label_tag }}
+                {{ form.ranked }}
+            </span>
+        </p>
+        {% endif %}
+        <input type="submit" value="Create">
+    </form>
+{% endblock %}

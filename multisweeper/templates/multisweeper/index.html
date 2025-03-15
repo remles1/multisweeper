@@ -14,12 +14,7 @@
 {% endif %}
 
 <h2 class="text-center mb-4">Lobbies</h2>
-    <form action="/create-lobby/" method="post" class="button-form">
-        {% csrf_token %}
-
-        <input type="hidden" name="action" value="submit">
-        <button type="submit" class="btn btn-join">Create lobby</button>
-    </form>
+    <button class="btn btn-join" onclick="window.location.href='/create-lobby/';" style="margin: 10px">Create lobby</button>
 <div class="table-responsive">
     <table class="table table-dark table-striped">
         <thead>

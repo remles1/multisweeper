@@ -21,6 +21,7 @@ class Lobby:
     lobby_id: str
     state: State
     owner: Union[User, str]
+    ranked: bool
     max_players: int
     current_players: int = 0
     players: List[Union[User, str]]  # str is for the guest
@@ -32,9 +33,10 @@ class Lobby:
     mine_count: int
     game_instance: GameLogic
 
-    def __init__(self, lobby_id, max_players, mine_count):
+    def __init__(self, lobby_id, max_players, mine_count, ranked: bool):
         self.lobby_id = lobby_id
         self.state = LobbyWaitingState(self)
+        self.ranked = ranked
         self.max_players = max_players
         self.players = []
         self.seats = {}
