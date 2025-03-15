@@ -74,6 +74,11 @@
     background-image: url("../images/cell-flagged-1.png");
 }
 
+.cell-flagged-2 {
+    background-image: url("../images/cell-flagged-2.png");
+}
+
+
 .cell-flagged-wrong {
     background-image: url("../images/cell-flagged-wrong.svg");
 }

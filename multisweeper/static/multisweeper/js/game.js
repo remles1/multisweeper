@@ -46,6 +46,7 @@ let user_board_dict = {
     "0": "cell-0",
     "f_0": "cell-flagged-0",
     "f_1": "cell-flagged-1",
+    "f_2": "cell-flagged-2",
     "fw": "cell-flagged-wrong",
     "m": "cell-mine",
     "me": "cell-mine-exploded",
