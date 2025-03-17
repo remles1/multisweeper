@@ -2,7 +2,7 @@ import uuid
 
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect
 
 from multisweeper.forms import LobbySettingsForm
@@ -54,6 +54,9 @@ def lobby(request, lobby_id):
     if not request.user.is_authenticated:
         if 'username' not in request.session:
             return redirect(f'/pick-username/?next=/lobby/{lobby_id}/')
+        if lobbies[lobby_id].ranked:
+            return HttpResponse("Guests can't join ranked games", status=401)
+
 
     if isinstance(lobbies[lobby_id].state, LobbyGameInProgressState):
         scope_user = request.session["username"] if not request.user.is_authenticated else request.user

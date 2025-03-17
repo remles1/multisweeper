@@ -237,10 +237,10 @@ class GameLogic:
         self.game_over = True
         self.game_won = True
         self.time_ended = timezone.now()
-        for dy in range(self.height):
-            for dx in range(self.width):
-                if self.logic_board[dy][dx] != -1:
-                    self.user_board[dy][dx] = f"{self.logic_board[dy][dx]}"
+        # for dy in range(self.height):
+        #     for dx in range(self.width):
+        #         if self.logic_board[dy][dx] != -1:
+        #             self.user_board[dy][dx] = f"{self.logic_board[dy][dx]}"
 
     def on_lose(self, y, x):
         self.game_over = True

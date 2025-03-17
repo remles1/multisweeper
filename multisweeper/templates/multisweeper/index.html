@@ -22,6 +22,7 @@
                 <th>#</th>
                 <th>Player Names</th>
                 <th>Players</th>
+                <th>Ranked</th>
                 <th>Join</th>
             </tr>
         </thead>
@@ -43,6 +44,9 @@
                     </td>
                     <td>
                         {{ lobby.current_players }}/{{ lobby.max_players }}
+                    </td>
+                    <td>
+                        {% if lobby.ranked %}Yes{% else %}No{% endif %}
                     </td>
                     <td><button class="btn btn-join" onclick="window.location.href='/lobby/{{ key }}';">Join</button></td>
                 </tr>

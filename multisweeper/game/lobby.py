@@ -62,9 +62,13 @@ class Lobby:
         await self.broadcast(self.create_state_json())
 
     async def add_player(self, player_connection: 'PlayerConsumer'):
+        if not player_connection.player.is_authenticated and player_connection.lobby.ranked:
+            return  # TODO really think if this validation of credentials should be there and not somwhere else
         await self.state.add_player(player_connection)
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
+        if not player_connection.player.is_authenticated and player_connection.lobby.ranked:
+            return  # TODO really think if this validation of credentials should be there and not somwhere else
         await self.state.remove_player(player_connection)
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
