@@ -1,6 +1,6 @@
 
 <!-- ROADMAP -->
-## Features
+## Features / TODO
 
 - [x] Multiplayer minesweeper game logic fully functional
 - [ ] Lobby
