@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import json
 import math
-from typing import List, TYPE_CHECKING, Dict, Union, Tuple
+from typing import List, TYPE_CHECKING, Dict, Union
 
 from channels.layers import get_channel_layer
 from django.contrib.auth.models import User
@@ -92,34 +92,57 @@ class Lobby:
                     await self.broadcast(self.create_game_over_json(
                         player_connection.player.username if isinstance(player_connection.player,
                                                                         User) else player_connection.player))
-                    self.on_win()
+                    await self.on_win()
                 elif self.game_instance.mine_count == self.game_instance.mines_clicked:  # draw
                     await self.change_state(LobbyGameOverState(self))
                     await self.broadcast(self.create_game_over_json(None))
 
-    def on_win(self):
-        self.calculate_elo_after_ranked_game()
+    async def on_win(self):
+        await self.calculate_elo_after_ranked_game()
 
-    def calculate_elo_after_ranked_game(self):
+    async def calculate_elo_after_ranked_game(self):
+        """
+                    p1: 20
+                    p2: 15
+                    p3: 10
+                    p4: 10
+
+                    p1 won with all,
+                    p2 won with p3 and p4, lost to p1
+                    p3 drew with p4, lost to p1 and p2
+                    p4 same as p3
+                """
+        # TODO make the change visible in lobby (not in this method)
+        K_CONST = 32
+
         scores_sorted = tuple(sorted(self.player_scores.items(), key=lambda item: item[1], reverse=True))
         # converts player scores into a tuple of tuples with sorting based on decreasing score.
         # Pretty much an ordered dictionary and that's how it will be used
 
-        # TODO implement ELO calculating like:
-        """
-            p1: 20
-            p2: 15
-            p3: 10
-            p4: 10
-            
-            p1 won with all,
-            p2 won with p3 and p4, lost to p1
-            p3 drew with p4, lost to p1 and p2
-            p4 same as p3
-        """
-        pass
+        delta_elo = dict(zip(self.players, [0] * len(self.players)))
 
+        for a in scores_sorted:
+            r_a = self.player_profiles[a[0]].elo_rating
+            for b in scores_sorted:
+                if a == b:
+                    continue
+                r_b = self.player_profiles[b[0]].elo_rating
 
+                e_a = 1 / (1 + 10 ** ((r_b - r_a) / 400))
+
+                if a[1] > b[1]:
+                    s_a = 1
+                elif a[1] < b[1]:
+                    s_a = 0
+                else:
+                    s_a = 0.5
+
+                d_elo_a = K_CONST * (s_a - e_a)
+                delta_elo[a[0]] += d_elo_a
+
+        for player, delta in delta_elo.items():
+            self.player_profiles[player].elo_rating += delta
+            await self.player_profiles[player].asave()
 
     async def start_game(self, player_connection: 'PlayerConsumer'):
         async with self.lock:

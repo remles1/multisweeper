@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 class LobbySettingsForm(forms.Form):
     mine_count = forms.ChoiceField(
         label='Mine Count',
-        choices=[(i, i) for i in range(40, 65, 5)],
+        choices=[(i, i) for i in range(0, 65, 5)],
         required=True,
         widget=forms.Select()
     )
@@ -31,7 +31,7 @@ class LobbySettingsForm(forms.Form):
 
     def clean_mine_count(self):
         mine_count = int(self.cleaned_data['mine_count'])
-        if mine_count not in [i for i in range(40, 65, 5)]:
+        if mine_count not in [i for i in range(0, 65, 5)]:
             raise ValidationError("Mine count must be between 40 and 60.")
         return mine_count
 
