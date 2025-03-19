@@ -21,7 +21,8 @@ body {
     background-color: #45a049;
 }
 .container {
-    max-width: 1000px;
+    min-width: 1200px;
+    width: 60vw;
     padding: 20px;
 }
 /* Apply a slightly lighter dark theme to the form */

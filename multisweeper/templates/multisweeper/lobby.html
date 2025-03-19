@@ -112,7 +112,16 @@
 {% block content %}
 
 <div id="lobby-container" class="lobby-container ">
-    <div class="side-container"></div>
+    <div class="side-container">
+        <div class="chat-container" id="chat-container">
+            <div class="chat-box" id="chat-box"></div>
+            <div class="input-box">
+                <input type="text" id="messageInput" placeholder="Type a message..." onkeydown="handleKeyDown(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
     <div id="game">
         <div class="top_part">
             <div class="border_corners">
@@ -183,6 +192,39 @@
 
 {% block scriptblock %}
 <script>
+    function sendMessage() {
+        let input = document.getElementById("messageInput");
+        let message = input.value.trim();
+        if (message === "") return;
+
+        let chatBox = document.getElementById("chat-box");
+        let messageElem = document.createElement("div");
+        messageElem.classList.add("message");
+        messageElem.textContent = message;
+        chatBox.appendChild(messageElem);
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+        input.value = "";
+    }
+
+    function handleKeyDown(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    }
+    function setChatBoxMaxHeight() {
+        let chatContainer = document.getElementById("chat-container");
+        let chatBox = document.getElementById("chat-box");
+        let inputBoxHeight = document.querySelector(".input-box").offsetHeight; // Get the height of the input box
+        let containerHeight = chatContainer.offsetHeight; // Get the height of the chat container
+
+        // Set the max height of chat-box to be the remaining space in chat-container minus the input box height
+        chatBox.style.maxHeight = (containerHeight - inputBoxHeight) + "px";
+    }
+
+    // Call the function to initially set the max height
+    setChatBoxMaxHeight();
+
     const lobby_id = "{{ lobby_id }}";
     const mine_count = "{{ mine_count }}";
 
