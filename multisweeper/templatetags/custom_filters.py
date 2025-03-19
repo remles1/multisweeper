@@ -16,6 +16,6 @@ def get_elo(profile):
     Returns None if the input is not a PlayerProfile or elo_rating is missing.
     """
     try:
-        return profile.elo_rating
+        return int(profile.elo_rating)
     except AttributeError:
         return None  # Or a default value like "--"

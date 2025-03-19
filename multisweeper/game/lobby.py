@@ -62,12 +62,12 @@ class Lobby:
         await self.broadcast(self.create_state_json())
 
     async def add_player(self, player_connection: 'PlayerConsumer'):
-        if not player_connection.player.is_authenticated and player_connection.lobby.ranked:
+        if player_connection.lobby.ranked and not isinstance(player_connection.player, User):
             return  # TODO really think if this validation of credentials should be there and not somewhere else
         await self.state.add_player(player_connection)
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
-        if not player_connection.player.is_authenticated and player_connection.lobby.ranked:
+        if player_connection.lobby.ranked and not isinstance(player_connection.player, User):
             return  # TODO really think if this validation of credentials should be there and not somewhere else
         await self.state.remove_player(player_connection)
 
@@ -201,22 +201,31 @@ class Lobby:
     def create_seats_json(self):
         temp_seats = {}
         temp_scores = {}
+        temp_elo = {}
+
         for seat, player in self.seats.items():
             if isinstance(player, User):
                 temp_seats[seat] = player.username
                 if player is not None:
                     temp_scores[seat] = self.player_scores[player]
+                    temp_elo[seat] = int(self.player_profiles[player].elo_rating)
+                else:
+                    temp_elo[seat] = None
             else:
                 temp_seats[seat] = player
                 if player is not None:
                     temp_scores[seat] = self.player_scores[player]
+                    temp_elo[seat] = '--GUEST--'
+                else:
+                    temp_elo[seat] = None
 
         content = json.dumps({
             "type": "seats",
             "owner": self.owner.username if isinstance(self.owner, User) else self.owner,
             "active_seat": self.active_seat,
             "seats": temp_seats,
-            "scores": temp_scores
+            "scores": temp_scores,
+            "elo_ratings": temp_elo
         })
         return content
 

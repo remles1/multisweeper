@@ -151,6 +151,8 @@ function render_user_board(user_board, user_board_mapped) {
 function render_seats_and_controls(data){
     const seats = data["seats"];
     const scores = data["scores"];
+    const elo_ratings = data["elo_ratings"];
+    console.log(elo_ratings);
     const active_seat = `${data["active_seat"]}`;
     const owner = `${data["owner"]}`;
     const start_game_button = document.getElementById("start-game-button");
@@ -167,6 +169,7 @@ function render_seats_and_controls(data){
         const player_seat_span = document.getElementById(`player-seat-${key}`);
         const owner_player_controls = document.getElementById(`owner-player-controls-${key}`);
         const username_in_this_seat = `${seats[key]}`;
+        const elo_div = document.getElementById(`elo-${key}`)
 
         // player colors and turn indicator
         if(active_seat === key){
@@ -211,6 +214,18 @@ function render_seats_and_controls(data){
             score_div.innerHTML = `SCORE: ${scores[key]}`;
         }
 
+        if (elo_ratings[key] === null){
+            elo_div.innerHTML = '-';
+        }
+        else {
+            if (elo_ratings[key] === '--GUEST--'){
+                elo_div.innerHTML = `${elo_ratings[key]}`
+            }
+            else {
+                elo_div.innerHTML = `${elo_ratings[key]} ELO`;
+            }
+
+        }
 
     }
 }
