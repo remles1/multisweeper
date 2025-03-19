@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
+# TODO dodaj pick-username uzywajac forms
 
 class LobbySettingsForm(forms.Form):
     mine_count = forms.ChoiceField(

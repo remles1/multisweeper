@@ -112,7 +112,6 @@ class Lobby:
                     p3 drew with p4, lost to p1 and p2
                     p4 same as p3
                 """
-        # TODO make the change visible in lobby (not in this method)
         K_CONST = 32
 
         scores_sorted = tuple(sorted(self.player_scores.items(), key=lambda item: item[1], reverse=True))
