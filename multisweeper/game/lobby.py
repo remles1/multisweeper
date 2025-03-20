@@ -105,6 +105,7 @@ class Lobby:
         if self.ranked:
             await self.calculate_elo_after_ranked_game()
         await self.chat_manager.send_server_message("Game over.")
+        self.active_seat = (self.active_seat + 1) % self.max_players
 
     async def calculate_elo_after_ranked_game(self):
         """
