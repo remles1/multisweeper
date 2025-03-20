@@ -104,7 +104,7 @@ class Lobby:
     async def on_win(self):
         if self.ranked:
             await self.calculate_elo_after_ranked_game()
-        await self.chat_manager.send_server_message("Game Over.")
+        await self.chat_manager.send_server_message("Game over.")
 
     async def calculate_elo_after_ranked_game(self):
         """
