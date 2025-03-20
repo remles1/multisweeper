@@ -10,7 +10,7 @@
 	- [x] Players can rejoin started game 
 		- [ ] Timer for players to rejoin
 	- [x] Automatic removal of empty lobbies
-	- [ ] Chat and lobby messages (player left etc.)
+	- [x] Chat and lobby messages (player left etc.)
 	- [x] Ranked Game
 		- [x] ELO calculation
 - [x] Account functionality
