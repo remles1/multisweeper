@@ -7,6 +7,7 @@ from typing import List, TYPE_CHECKING, Dict, Union
 from channels.layers import get_channel_layer
 from django.contrib.auth.models import User
 
+from multisweeper.game.chat_manager import ChatManager
 from multisweeper.game.game_logic import GameLogic
 from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState, LobbyGameOverState
 from multisweeper.models import PlayerProfile
@@ -48,6 +49,7 @@ class Lobby:
         self.mine_count = mine_count
         self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=mine_count)
         self.lock = asyncio.Lock()
+        self.chat_manager = ChatManager(self)
 
         self.channel_layer = get_channel_layer()
         self.group_name = f'lobby_{self.lobby_id}'
@@ -98,7 +100,8 @@ class Lobby:
                     await self.broadcast(self.create_game_over_json(None))
 
     async def on_win(self):
-        await self.calculate_elo_after_ranked_game()
+        if self.ranked:
+            await self.calculate_elo_after_ranked_game()
 
     async def calculate_elo_after_ranked_game(self):
         """

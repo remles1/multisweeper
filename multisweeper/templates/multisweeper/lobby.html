@@ -192,38 +192,6 @@
 
 {% block scriptblock %}
 <script>
-    function sendMessage() {
-        let input = document.getElementById("messageInput");
-        let message = input.value.trim();
-        if (message === "") return;
-
-        let chatBox = document.getElementById("chat-box");
-        let messageElem = document.createElement("div");
-        messageElem.classList.add("message");
-        messageElem.textContent = message;
-        chatBox.appendChild(messageElem);
-
-        chatBox.scrollTop = chatBox.scrollHeight;
-        input.value = "";
-    }
-
-    function handleKeyDown(event) {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
-    }
-
-    function setChatBoxMaxHeight() {
-        let chatContainer = document.getElementById("chat-container");
-        let chatBox = document.getElementById("chat-box");
-        let inputBoxHeight = document.querySelector(".input-box").offsetHeight;
-        let containerHeight = chatContainer.offsetHeight;
-
-        chatBox.style.maxHeight = (containerHeight - inputBoxHeight) + "px";
-    }
-
-    setChatBoxMaxHeight();
-
     const lobby_id = "{{ lobby_id }}";
     const mine_count = "{{ mine_count }}";
 

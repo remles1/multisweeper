@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 from multisweeper.game.lobby import Lobby, lobbies
 
+MAX_PACKET_SIZE = 1024
 
 class PlayerConsumer(AsyncWebsocketConsumer):
     player: Union[User, str]
@@ -36,7 +37,14 @@ class PlayerConsumer(AsyncWebsocketConsumer):
         await self.send(self.lobby.create_state_json())
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
+        if len(text_data) > MAX_PACKET_SIZE:
+            await self.close(code=1009)
+            return
+        try:
+            text_data_json = json.loads(text_data)
+        except json.JSONDecodeError:
+            print("Invalid JSON")
+            return
 
         if text_data_json["type"] == "l_click":
             message = text_data_json["message"]
@@ -51,6 +59,8 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             await self.lobby.promote_to_owner(self, text_data_json["message"])
         elif text_data_json["type"] == "start_game":
             await self.lobby.start_game(self)
+        elif text_data_json["type"] == "chat_message":
+            await self.lobby.chat_manager.process_user_message(message=text_data_json["message"], sender=self.player)
 
     async def disconnect(self, close_code):
         await self.lobby.remove_player(self)

@@ -73,6 +73,9 @@ socket.onmessage = function (e) {
     if(data["type"] === "seats"){
         render_seats_and_controls(data);
     }
+    else if(data["type"] === "chat_message"){
+        display_message_from_server(data["message"]);
+    }
     else if(data["type"] === "game_over"){
         if (data["draw"]){
             alert('draw');
@@ -154,7 +157,6 @@ function render_seats_and_controls(data){
     const seats = data["seats"];
     const scores = data["scores"];
     const elo_ratings = data["elo_ratings"];
-    console.log(elo_ratings);
     const active_seat = `${data["active_seat"]}`;
     const owner = `${data["owner"]}`;
     const start_game_button = document.getElementById("start-game-button");
@@ -345,3 +347,77 @@ function convertNumberTo3Digits(number){
     return formatted.split('');
 }
 
+/*
+* CHAT FUNCTIONS
+*/
+
+function hackyEscaper(s){
+    // not really needed tbh
+    let div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+function display_message_from_server(message){
+    const chatBox = document.getElementById("chat-box");
+    const messageElem = document.createElement("div");
+    messageElem.classList.add("message");
+    chatBox.appendChild(messageElem);
+
+    messageElem.textContent = message;
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function sendMessageLocalPart() {
+    const input = document.getElementById("messageInput");
+    let message = input.value.trim();
+
+    if (message === "") return;
+
+    const chatBox = document.getElementById("chat-box");
+    const messageElem = document.createElement("div");
+    messageElem.classList.add("message");
+    chatBox.appendChild(messageElem);
+
+    if (message.length > 140){
+        messageElem.textContent = '--- MESSAGE TOO LONG ---';
+    }
+    else {
+        message = hackyEscaper(message);
+        //messageElem.textContent = message; //it escapes it one more time for good measure why not
+        sendMessageToServer(message);
+    }
+    chatBox.scrollTop = chatBox.scrollHeight;
+    input.value = "";
+}
+
+function sendMessageToServer(message){
+
+    const chat_message_json = JSON.stringify({
+        type: "chat_message",
+        message: message,
+    })
+    socket.send(chat_message_json)
+}
+
+function handleKeyDown(event) {
+    if (event.key === "Enter") {
+        sendMessageLocalPart();
+    }
+}
+
+function setChatBoxMaxHeight() {
+    let chatContainer = document.getElementById("chat-container");
+    let chatBox = document.getElementById("chat-box");
+    let inputBoxHeight = document.querySelector(".input-box").offsetHeight;
+    let containerHeight = chatContainer.offsetHeight;
+
+    chatBox.style.maxHeight = (containerHeight - inputBoxHeight) + "px";
+}
+
+setChatBoxMaxHeight();
+
+/*
+* END CHAT FUNCTIONS
+*/
