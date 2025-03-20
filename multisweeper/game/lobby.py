@@ -161,6 +161,7 @@ class Lobby:
 
                     await self.change_state(LobbyGameInProgressState(self))
                     await self.broadcast_board_and_interface()
+                    await self.chat_manager.send_server_message("Game started.")
 
     def game_rematch_cleanup(self):
         self.player_scores = dict(zip(self.players, [0] * len(self.players)))
