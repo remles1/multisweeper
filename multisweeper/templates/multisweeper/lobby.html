@@ -212,17 +212,16 @@
             sendMessage();
         }
     }
+
     function setChatBoxMaxHeight() {
         let chatContainer = document.getElementById("chat-container");
         let chatBox = document.getElementById("chat-box");
-        let inputBoxHeight = document.querySelector(".input-box").offsetHeight; // Get the height of the input box
-        let containerHeight = chatContainer.offsetHeight; // Get the height of the chat container
+        let inputBoxHeight = document.querySelector(".input-box").offsetHeight;
+        let containerHeight = chatContainer.offsetHeight;
 
-        // Set the max height of chat-box to be the remaining space in chat-container minus the input box height
         chatBox.style.maxHeight = (containerHeight - inputBoxHeight) + "px";
     }
 
-    // Call the function to initially set the max height
     setChatBoxMaxHeight();
 
     const lobby_id = "{{ lobby_id }}";

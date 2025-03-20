@@ -1,6 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
+
 # TODO dodaj pick-username uzywajac forms
 
 class LobbySettingsForm(forms.Form):
@@ -41,4 +42,3 @@ class LobbySettingsForm(forms.Form):
         if not isinstance(ranked, bool):
             raise ValidationError("Ranked must be a boolean value.")
         return ranked
-

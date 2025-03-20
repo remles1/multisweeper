@@ -4,7 +4,6 @@ import random
 from datetime import datetime
 from typing import List
 
-from django.contrib.auth.models import User
 from django.utils import timezone
 
 
@@ -49,7 +48,6 @@ class GameLogic:
         """Creating a new board, not coming back to one
 
         Args:
-            player:
             width:
             height:
             mine_count:

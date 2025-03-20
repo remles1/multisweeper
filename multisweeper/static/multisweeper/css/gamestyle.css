@@ -322,8 +322,8 @@
     height: 30px;
     background-size: 14px 7px;
     background-image: var(--owner);
-    background-repeat: no-repeat; /* Prevent the image from repeating */
-    background-position: center; /* Center the background image */
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .seat{

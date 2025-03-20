@@ -1,6 +1,5 @@
 import uuid
 
-from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect
@@ -56,7 +55,6 @@ def lobby(request, lobby_id):
             return redirect(f'/pick-username/?next=/lobby/{lobby_id}/')
         if lobbies[lobby_id].ranked:
             return HttpResponse("Guests can't join ranked games", status=401)
-
 
     if isinstance(lobbies[lobby_id].state, LobbyGameInProgressState):
         scope_user = request.session["username"] if not request.user.is_authenticated else request.user
