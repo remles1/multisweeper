@@ -376,11 +376,11 @@ function sendMessageLocalPart() {
     if (message === "") return;
 
     const chatBox = document.getElementById("chat-box");
-    const messageElem = document.createElement("div");
-    messageElem.classList.add("message");
-    chatBox.appendChild(messageElem);
 
     if (message.length > 140){
+        const messageElem = document.createElement("div");
+        messageElem.classList.add("message");
+        chatBox.appendChild(messageElem);
         messageElem.textContent = '--- MESSAGE TOO LONG ---';
     }
     else {
