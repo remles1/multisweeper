@@ -42,6 +42,7 @@ class LobbyWaitingState(State):
                 return
             if self.lobby.current_players == 0:
                 self.lobby.owner = player_connection.player
+
             self.lobby.current_players += 1
             self.lobby.players.append(player_connection.player)
             self.lobby.player_connections[player_connection.player] = player_connection
@@ -72,6 +73,9 @@ class LobbyWaitingState(State):
                 self.lobby.owner = None
             else:
                 self.lobby.owner = self.lobby.players[0]
+                await self.lobby.chat_manager.send_server_message(
+                    f"{self.lobby.players[0]} is the owner of the lobby.")
+
             self.lobby.seats = {k: (None if v is player_connection.player else v) for k, v in self.lobby.seats.items()}
             del self.lobby.player_connections[player_connection.player]
             if isinstance(player_connection.player, User):

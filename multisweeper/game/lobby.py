@@ -67,11 +67,13 @@ class Lobby:
         if player_connection.lobby.ranked and not isinstance(player_connection.player, User):
             return  # TODO really think if this validation of credentials should be there and not somewhere else
         await self.state.add_player(player_connection)
+        await self.chat_manager.send_server_message(f"{player_connection.player} joined.")
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         if player_connection.lobby.ranked and not isinstance(player_connection.player, User):
             return  # TODO really think if this validation of credentials should be there and not somewhere else
         await self.state.remove_player(player_connection)
+        await self.chat_manager.send_server_message(f"{player_connection.player} quit.")
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
         await self.state.choose_seat(player_connection, seat_number)
@@ -102,6 +104,7 @@ class Lobby:
     async def on_win(self):
         if self.ranked:
             await self.calculate_elo_after_ranked_game()
+        await self.chat_manager.send_server_message("Game Over.")
 
     async def calculate_elo_after_ranked_game(self):
         """
@@ -167,6 +170,7 @@ class Lobby:
                                                                                                       LobbyGameInProgressState):
             self.owner = self.seats[seat]
         await self.broadcast(self.create_seats_json())
+        await self.chat_manager.send_server_message(f"{self.seats[seat]} is the owner of the lobby.")
 
     async def broadcast(self, content):
         print(datetime.datetime.now(), ' ', self.player_scores, self.state)

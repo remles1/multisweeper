@@ -29,3 +29,5 @@ class ChatManager:
                 return
             await self.lobby.broadcast(create_message_json(message_with_username))
 
+    async def send_server_message(self, message):
+        await self.lobby.broadcast(create_message_json(f"SERVER: {message}"))
