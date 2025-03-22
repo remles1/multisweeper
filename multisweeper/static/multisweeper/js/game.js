@@ -364,6 +364,10 @@ function display_message_from_server(message){
     messageElem.classList.add("message");
     chatBox.appendChild(messageElem);
 
+    if(message.startsWith("SERVER:")){
+        messageElem.style.background = "#4CAF50";
+    }
+
     messageElem.textContent = message;
 
     chatBox.scrollTop = chatBox.scrollHeight;
