@@ -101,7 +101,9 @@ socket.onmessage = function (e) {
             row.map(cell => user_board_dict[cell])
         )
         //console.log(user_board)
-        render_user_board(user_board, user_board_mapped)
+        render_user_board(user_board, user_board_mapped);
+        update_seconds_counter(0);
+        timer();
         let gameOver = data["over"];
         if (gameOver) {
             timerRunning = false;
@@ -313,6 +315,7 @@ function startGame(){
 }
 
 function timer() {
+    clearInterval(timerInterval)
     let seconds = 0;
     timerInterval=setInterval(()=>{
         if (!timerRunning) {
