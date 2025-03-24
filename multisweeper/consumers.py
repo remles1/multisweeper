@@ -8,6 +8,7 @@ from multisweeper.game.lobby import Lobby, lobbies
 
 MAX_PACKET_SIZE = 1024
 
+
 class PlayerConsumer(AsyncWebsocketConsumer):
     player: Union[User, str]
     lobby: Lobby

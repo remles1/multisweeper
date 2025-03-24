@@ -2,6 +2,12 @@ body {
     background-color: #121212;
     color: #ffffff;
 }
+
+a{
+    color: #4CAF50;
+    text-decoration: none;
+}
+
 .table-dark {
     background-color: #1e1e1e;
     border-radius: 10px;

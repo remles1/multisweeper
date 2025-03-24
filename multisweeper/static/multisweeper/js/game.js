@@ -1,5 +1,3 @@
-// TODO make timer turn based, current logic is a remnant of singleplayer minesweeper
-
 const socket = new WebSocket(`ws://localhost:8000/ws/lobby/${lobby_id}`);
 let firstClick = true;
 let startTime = null;
