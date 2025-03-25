@@ -142,7 +142,7 @@
     align-items: center;
 }
 
-.face-button {
+.bomb {
     border: none;
     padding: 0;
     margin: 0;
@@ -153,21 +153,12 @@
     height: 39px;
 }
 
-.face-neutral {
-
-    background-image: url("../images/face-unpressed.png");
+.bomb-off{
+    background: var(--bomb-off-bg);
 }
 
-.face-neutral:active{
-    background-image: url("../images/face-pressed.png");
-}
-
-.face-happy{
-    background-image: url("../images/face-happy.png");
-}
-
-.face-sad{
-    background-image: url("../images/face-sad.png");
+.bomb-on{
+    background: var(--bomb-on-bg);
 }
 
 .counter {
@@ -351,6 +342,14 @@
     text-align: center;
 }
 
+.bomb-div{
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+
 .chat-container {
     width: 100%;
     height: 400px;
@@ -412,3 +411,4 @@
 .input-box button:hover {
     background-color: #45a049;
 }
+

@@ -59,7 +59,9 @@
             --t-right-image: url("{% static 'multisweeper/images/t-right.png' %}");
             --corner-bottom-left-image: url("{% static 'multisweeper/images/corner-bottom-left.png' %}");
             --corner-bottom-right-image: url("{% static 'multisweeper/images/corner-bottom-right.png' %}");
-            --owner: url("{% static 'multisweeper/images/owner.png' %}")
+            --owner: url("{% static 'multisweeper/images/owner.png' %}");
+            --bomb-off-bg: url("{% static 'multisweeper/images/bomb-off.png' %}");
+            --bomb-on-bg: url("{% static 'multisweeper/images/bomb-on.png' %}");
         }
 
         .seat {
@@ -135,7 +137,7 @@
                                 <div id="mlc_d0" class="digit"></div><div id="mlc_d1" class="digit"></div><div id="mlc_d2" class="digit"></div>
                             </div>
                         </div>
-                        <button id="new-game-button" class="face-button face-neutral"></button>
+                        <button id="bomb" class="bomb bomb-off"></button>
                         <div id="seconds_counter" class="counter">
                             <div class="digits">
                                 <div id="sc_d0" class="digit"></div><div id="sc_d1" class="digit"></div><div id="sc_d2" class="digitS"></div>
@@ -182,6 +184,7 @@
             {% endfor %}
         </div>
         <button id="start-game-button" class="btn btn-join" onclick="startGame()">Start the game</button>
+
     </div>
 
 </div>
