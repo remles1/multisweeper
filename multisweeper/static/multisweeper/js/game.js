@@ -312,12 +312,23 @@ function cellMouseUp(event) {
 
     if (this.classList.contains(user_board_dict["0"])) {
         return;
-    } else {
-        const message = JSON.stringify({
-            type: "l_click",
-            message: this.id.replace(/^id/, "")
-        })
-        socket.send(message)
+    }
+    else {
+        if(!bombModeActivated){
+            const message = JSON.stringify({
+                type: "l_click",
+                message: this.id.replace(/^id/, "")
+            })
+            socket.send(message)
+        }
+        else {
+            const message = JSON.stringify({
+                type: "bomb",
+                message: this.id.replace(/^id/, "")
+            })
+            socket.send(message)
+            console.log(message);
+        }
     }
 
 

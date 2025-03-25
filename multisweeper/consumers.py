@@ -1,6 +1,7 @@
 import json
 from typing import Union
 
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import User
 
@@ -53,6 +54,13 @@ class PlayerConsumer(AsyncWebsocketConsumer):
             y = int(split_message[0])
             x = int(split_message[1])
             await self.lobby.left_click_game(y, x, self)
+            await self.lobby.broadcast_board_and_interface()
+        elif text_data_json["type"] == "bomb":
+            message = text_data_json["message"]
+            split_message = message.split('-')
+            y = int(split_message[0])
+            x = int(split_message[1])
+            await self.lobby.bomb_used(y, x, self)
             await self.lobby.broadcast_board_and_interface()
         elif text_data_json["type"] == "choose_seat":
             await self.lobby.choose_seat(self, text_data_json["message"])

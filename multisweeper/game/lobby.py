@@ -1,3 +1,6 @@
+# TODO da sie zaczac gre bez zajecia miejsca kiedy jest full graczy (napraw)
+
+
 import asyncio
 import datetime
 import json
@@ -77,6 +80,34 @@ class Lobby:
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
         await self.state.choose_seat(player_connection, seat_number)
+
+    async def bomb_used(self, y, x, player_connection: 'PlayerConsumer'):
+        async with self.lock:
+            if not isinstance(self.state, LobbyGameInProgressState):
+                return
+
+            if player_connection.player != self.seats[self.active_seat]:
+                return
+
+            for dy in range(y - 2, y + 3, 1):
+                for dx in range(x - 2, x + 3, 1):
+                    if (not (0 <= dy < self.game_instance.height)) or (not (0 <= dx < self.game_instance.width)):
+                        continue
+                    self.game_instance.cell_left_clicked(dy, dx, self.active_seat)
+                    if self.game_instance.logic_board[dy][dx] == -1:
+                        self.player_scores[player_connection.player] += 1
+            if self.player_scores[player_connection.player] > math.floor(self.game_instance.mine_count / 2):
+                await self.change_state(LobbyGameOverState(self))
+                await self.broadcast(self.create_game_over_json(
+                    player_connection.player.username if isinstance(player_connection.player,
+                                                                    User) else player_connection.player))
+                await self.on_win()
+            elif self.game_instance.mine_count == self.game_instance.mines_clicked:  # draw
+                await self.change_state(LobbyGameOverState(self))
+                await self.broadcast(self.create_game_over_json(None))
+
+            self.active_seat = (self.active_seat + 1) % self.max_players
+            # TODO dodaj ze mozna uzyc bomb tylko jak sie ma mniej punktow oraz tylko raz
 
     async def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
         async with self.lock:
