@@ -89,13 +89,13 @@ class Lobby:
             if player_connection.player != self.seats[self.active_seat]:
                 return
 
+            mines_clicked_before = self.game_instance.mines_clicked
+
             for dy in range(y - 2, y + 3, 1):
                 for dx in range(x - 2, x + 3, 1):
                     if (not (0 <= dy < self.game_instance.height)) or (not (0 <= dx < self.game_instance.width)):
                         continue
                     self.game_instance.cell_left_clicked(dy, dx, self.active_seat)
-                    if self.game_instance.logic_board[dy][dx] == -1:
-                        self.player_scores[player_connection.player] += 1
             if self.player_scores[player_connection.player] > math.floor(self.game_instance.mine_count / 2):
                 await self.change_state(LobbyGameOverState(self))
                 await self.broadcast(self.create_game_over_json(
@@ -106,6 +106,7 @@ class Lobby:
                 await self.change_state(LobbyGameOverState(self))
                 await self.broadcast(self.create_game_over_json(None))
 
+            self.player_scores[player_connection.player] += self.game_instance.mines_clicked - mines_clicked_before
             self.active_seat = (self.active_seat + 1) % self.max_players
             # TODO dodaj ze mozna uzyc bomb tylko jak sie ma mniej punktow oraz tylko raz
 
