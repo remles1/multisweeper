@@ -2,7 +2,11 @@
 <!-- ROADMAP -->
 ## Features / TODO
 
-- [x] Multiplayer minesweeper game logic fully functional
+- [x] Multiplayer minesweeper game logic
+	- [x] Core functionalities (flood cell opening, mines clicked counting etc.)
+ 	- [x] Turn changing
+  	- [x] Winning logic
+  	- [x] Bomb mechanic
 - [ ] Lobby
 	- [x] Lobby creation
 	 	- [ ] Custom game rules
