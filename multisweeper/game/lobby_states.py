@@ -53,6 +53,7 @@ class LobbyWaitingState(State):
                 )
 
             self.lobby.player_scores[player_connection.player] = 0
+            self.lobby.player_bomb_used[player_connection.player] = False
 
             await self.lobby.channel_layer.group_add(
                 self.lobby.group_name,
@@ -78,10 +79,14 @@ class LobbyWaitingState(State):
                 self.lobby.owner = self.lobby.players[0]
 
             self.lobby.seats = {k: (None if v is player_connection.player else v) for k, v in self.lobby.seats.items()}
+
             del self.lobby.player_connections[player_connection.player]
+
+
             if isinstance(player_connection.player, User):
                 del self.lobby.player_profiles[player_connection.player]
             del self.lobby.player_scores[player_connection.player]
+            del self.lobby.player_bomb_used[player_connection.player]
 
             await self.lobby.channel_layer.group_discard(
                 self.lobby.group_name,

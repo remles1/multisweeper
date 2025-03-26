@@ -1,6 +1,3 @@
-# TODO da sie zaczac gre bez zajecia miejsca kiedy jest full graczy (napraw)
-
-
 import asyncio
 import datetime
 import json
@@ -33,6 +30,7 @@ class Lobby:
     player_scores: Dict[Union[User, str], int]
     player_profiles: Dict[Union[User, str], PlayerProfile | None]
     player_connections: Dict[Union[User, str], 'PlayerConsumer']
+    player_bomb_used: Dict[Union[User, str], bool]
     active_seat: int = 0
     mine_count: int
     game_instance: GameLogic
@@ -48,6 +46,7 @@ class Lobby:
             self.seats[i] = None
         self.player_profiles = {}
         self.player_connections = {}
+        self.player_bomb_used = {}
         self.player_scores = {}
         self.mine_count = mine_count
         self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=mine_count)
@@ -89,6 +88,16 @@ class Lobby:
             if player_connection.player != self.seats[self.active_seat]:
                 return
 
+            #  this check below returns if:
+            # 1. player has already used bomb before
+            # 2. player who wanted to use the bomb doesn't have the lowest score
+            # 3. player who wanted to use the bomb shares the lowest score with somebody else
+            if self.player_bomb_used[player_connection.player] or self.player_scores[player_connection.player] != min(
+                    self.player_scores.values()) or sum(
+                value == self.player_scores[player_connection.player] for value in self.player_scores.values()) != 1:
+                return
+
+            self.player_bomb_used[player_connection.player] = True
             mines_clicked_before = self.game_instance.mines_clicked
 
             for dy in range(y - 2, y + 3, 1):
@@ -110,7 +119,6 @@ class Lobby:
                 await self.broadcast(self.create_game_over_json(None))
 
             self.active_seat = (self.active_seat + 1) % self.max_players
-            # TODO dodaj ze mozna uzyc bomb tylko jak sie ma mniej punktow oraz tylko raz
 
     async def left_click_game(self, y, x, player_connection: 'PlayerConsumer'):
         async with self.lock:
@@ -187,7 +195,8 @@ class Lobby:
     async def start_game(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
             if player_connection.player == self.owner and not isinstance(self.state, LobbyGameInProgressState):
-                if len(self.players) == self.max_players:
+                if len(self.players) == self.max_players and sum(
+                        1 for value in self.seats.values() if value is None) == 0:
                     if isinstance(self.state, LobbyGameOverState):
                         self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16,
                                                        mine_count=self.mine_count)
@@ -200,6 +209,7 @@ class Lobby:
 
     def game_rematch_cleanup(self):
         self.player_scores = dict(zip(self.players, [0] * len(self.players)))
+        self.player_bomb_used = dict(zip(self.players, [False] * len(self.players)))
 
     async def promote_to_owner(self, player_connection: 'PlayerConsumer', seat: int):
         if player_connection.player == self.owner and self.seats[seat] is not None and not isinstance(self.state,
@@ -209,7 +219,7 @@ class Lobby:
         await self.chat_manager.send_server_message(f"{self.seats[seat]} is the owner of the lobby.")
 
     async def broadcast(self, content):
-        print(datetime.datetime.now(), ' ', self.player_scores, self.state)
+        print(datetime.datetime.now(), ' ', self.player_scores, self.player_bomb_used, self.state)
         await self.channel_layer.group_send(
             self.group_name,
             {
