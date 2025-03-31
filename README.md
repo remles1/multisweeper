@@ -28,7 +28,7 @@
  Not an exhaustive list and more to come
 
 
-### Installation
+## Installation
 1. Clone the repo
    ```sh
    git clone https://github.com/remles1/multisweeper.git
@@ -50,6 +50,20 @@
 	python manage.py runserver
    ```
 Database is required.
-Default credentials are inside manage.py file
+This one works out-of-the-box:
+```yaml
+services:
+    multisweeperdb:
+        image: postgres:17.0-alpine3.20
+        environment:
+        - POSTGRES_DB=app
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=pass
+        container_name: multisweeperdb
+        ports:
+        - "5432:5432"
+        command: ["postgres", "-c", "log_statement=all"]
+
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
