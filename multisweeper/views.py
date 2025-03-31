@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect
 
 from multisweeper.forms import LobbySettingsForm
 from multisweeper.game.lobby import lobbies, Lobby
-from multisweeper.game.lobby_states import LobbyGameInProgressState
+from multisweeper.game.lobby_states import LobbyGameInProgressState, LobbyPlayerQuitState
 from multisweeper.utils.utils import username_in_player_list
 
 
@@ -56,7 +56,7 @@ def lobby(request, lobby_id):
         if lobbies[lobby_id].ranked:
             return HttpResponse("Guests can't join ranked games", status=401)
 
-    if isinstance(lobbies[lobby_id].state, LobbyGameInProgressState):
+    if isinstance(lobbies[lobby_id].state, LobbyPlayerQuitState):
         scope_user = request.session["username"] if not request.user.is_authenticated else request.user
 
         if scope_user not in lobbies[lobby_id].players:

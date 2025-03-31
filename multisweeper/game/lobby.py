@@ -9,7 +9,8 @@ from django.contrib.auth.models import User
 
 from multisweeper.game.chat_manager import ChatManager
 from multisweeper.game.game_logic import GameLogic
-from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState, LobbyGameOverState
+from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState, LobbyGameOverState, \
+    LobbyPlayerQuitState
 from multisweeper.models import PlayerProfile
 
 if TYPE_CHECKING:
@@ -61,6 +62,21 @@ class Lobby:
         if self.lobby_id in lobbies and self.current_players == 0:
             del lobbies[self.lobby_id]
 
+    async def wait_for_player_to_rejoin(self, player: Union[User | str]):
+        await asyncio.sleep(10)
+        if not isinstance(self.state, LobbyPlayerQuitState):
+            return
+        if player in self.state.players_who_quit:
+            await self.change_state(LobbyGameOverState(self))
+            await self.state.remove_player_without_connection(player)
+            await self.broadcast(self.create_seats_json())
+            # remove elo from player who quit if its ranked
+
+            await self.chat_manager.send_server_message(f"{player} failed to rejoin.")
+
+        elif len(self.state.players_who_quit) == 0:
+            await self.change_state(LobbyGameInProgressState(self))
+
     async def change_state(self, state: State):
         self.state = state
         await self.broadcast(self.create_state_json())
@@ -69,11 +85,16 @@ class Lobby:
         if player_connection.lobby.ranked and not isinstance(player_connection.player, User):
             return  # TODO really think if this validation of credentials should be there and not somewhere else
         await self.state.add_player(player_connection)
+        if isinstance(self.state, LobbyPlayerQuitState):
+            if len(self.state.players_who_quit) == 0:
+                await self.change_state(LobbyGameInProgressState(self))
         await self.chat_manager.send_server_message(f"{player_connection.player} joined.")
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         if player_connection.lobby.ranked and not isinstance(player_connection.player, User):
             return  # TODO really think if this validation of credentials should be there and not somewhere else
+        if isinstance(self.state, LobbyGameInProgressState):
+            await self.change_state(LobbyPlayerQuitState(self))
         await self.state.remove_player(player_connection)
         await self.chat_manager.send_server_message(f"{player_connection.player} quit.")
 
@@ -117,6 +138,7 @@ class Lobby:
             elif self.game_instance.mine_count == self.game_instance.mines_clicked:  # draw
                 await self.change_state(LobbyGameOverState(self))
                 await self.broadcast(self.create_game_over_json(None))
+                await self.on_win()
 
             self.active_seat = (self.active_seat + 1) % self.max_players
 
@@ -142,6 +164,7 @@ class Lobby:
                 elif self.game_instance.mine_count == self.game_instance.mines_clicked:  # draw
                     await self.change_state(LobbyGameOverState(self))
                     await self.broadcast(self.create_game_over_json(None))
+                    await self.on_win()
 
     async def on_win(self):
         if self.ranked:
@@ -194,7 +217,9 @@ class Lobby:
 
     async def start_game(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
-            if player_connection.player == self.owner and not isinstance(self.state, LobbyGameInProgressState):
+            if player_connection.player == self.owner and (
+                not isinstance(self.state, LobbyGameInProgressState) and not isinstance(self.state,
+                                                                                       LobbyPlayerQuitState)):
                 if len(self.players) == self.max_players and sum(
                         1 for value in self.seats.values() if value is None) == 0:
                     if isinstance(self.state, LobbyGameOverState):
@@ -212,14 +237,19 @@ class Lobby:
         self.player_bomb_used = dict(zip(self.players, [False] * len(self.players)))
 
     async def promote_to_owner(self, player_connection: 'PlayerConsumer', seat: int):
-        if player_connection.player == self.owner and self.seats[seat] is not None and not isinstance(self.state,
-                                                                                                      LobbyGameInProgressState):
+        if player_connection.player == self.owner and self.seats[seat] is not None and (
+                not isinstance(self.state, LobbyGameInProgressState) and not isinstance(self.state,
+                                                                                       LobbyPlayerQuitState)):
             self.owner = self.seats[seat]
         await self.broadcast(self.create_seats_json())
         await self.chat_manager.send_server_message(f"{self.seats[seat]} is the owner of the lobby.")
 
     async def broadcast(self, content):
-        print(datetime.datetime.now(), ' ', self.player_scores, self.player_bomb_used, self.state)
+
+        if isinstance(self.state, LobbyPlayerQuitState):
+            print(datetime.datetime.now(), ' ', self.state.players_who_quit)
+        else:
+            print(datetime.datetime.now(), ' ', self.player_scores, self.player_bomb_used, self.state)
         await self.channel_layer.group_send(
             self.group_name,
             {

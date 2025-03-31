@@ -165,7 +165,7 @@ function render_seats_and_controls(data) {
     const active_seat = `${data["active_seat"]}`;
     const owner = `${data["owner"]}`;
     const start_game_button = document.getElementById("start-game-button");
-    if (username === owner && state !== 'LobbyGameInProgressState') {
+    if (username === owner && (state !== 'LobbyGameInProgressState' && state !== 'LobbyPlayerQuitState')) {
         start_game_button.style.display = 'inline';
     } else {
         start_game_button.style.display = 'none';
@@ -189,7 +189,7 @@ function render_seats_and_controls(data) {
 
         // if the username is the owner (username is a global variable assigned to the file),
         // show owner controls along every seat
-        if (username === owner && state !== 'LobbyGameInProgressState') {
+        if (username === owner && (state !== 'LobbyGameInProgressState' && state !== 'LobbyPlayerQuitState')) {
             owner_player_controls.style.display = 'inline';
         } else {
             owner_player_controls.style.display = 'none';

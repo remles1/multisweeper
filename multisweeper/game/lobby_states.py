@@ -1,7 +1,7 @@
 import asyncio
 import json
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from django.contrib.auth.models import User
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class State(ABC):
     lobby: 'Lobby'
 
-    def __init__(self, lobby: 'Lobby'):
+    def __init__(self, lobby: 'Lobby') -> None:
         self.lobby = lobby
 
     @abstractmethod
@@ -82,7 +82,6 @@ class LobbyWaitingState(State):
 
             del self.lobby.player_connections[player_connection.player]
 
-
             if isinstance(player_connection.player, User):
                 del self.lobby.player_profiles[player_connection.player]
             del self.lobby.player_scores[player_connection.player]
@@ -92,6 +91,32 @@ class LobbyWaitingState(State):
                 self.lobby.group_name,
                 player_connection.channel_name
             )
+            if self.lobby.current_players == 0:
+                asyncio.create_task(self.lobby.auto_destruct())
+                return
+
+    async def remove_player_without_connection(self, player: Union[User,str]):
+        async with self.lobby.lock:
+            if type(self) is not type(
+                    self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
+                return
+
+            self.lobby.players.remove(player)
+            if self.lobby.current_players == 0:
+                self.lobby.owner = None
+            else:
+                if self.lobby.owner != self.lobby.players[0]:
+                    await self.lobby.chat_manager.send_server_message(
+                        f"{self.lobby.players[0]} is the owner of the lobby.")
+                self.lobby.owner = self.lobby.players[0]
+
+            self.lobby.seats = {k: (None if v is player else v) for k, v in self.lobby.seats.items()}
+
+            if isinstance(player, User):
+                del self.lobby.player_profiles[player]
+            del self.lobby.player_scores[player]
+            del self.lobby.player_bomb_used[player]
+
             if self.lobby.current_players == 0:
                 asyncio.create_task(self.lobby.auto_destruct())
                 return
@@ -112,11 +137,31 @@ class LobbyWaitingState(State):
 
 class LobbyGameInProgressState(State):
     async def add_player(self, player_connection: 'PlayerConsumer'):
+        pass
+
+    async def remove_player(self, player_connection: 'PlayerConsumer'):
+        pass
+
+    async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
+        return
+
+
+class LobbyGameOverState(LobbyWaitingState):
+    pass
+
+
+class LobbyPlayerQuitState(State):
+    def __init__(self, lobby: 'Lobby'):
+        super().__init__(lobby)
+        self.players_who_quit = []
+
+    async def add_player(self, player_connection: 'PlayerConsumer'):
         async with self.lobby.lock:
             if type(self) is not type(
                     self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
+            self.players_who_quit.remove(player_connection.player)
             self.lobby.current_players += 1
 
             #  redirect is handled in the view, so I think its safe to delete that below
@@ -140,6 +185,7 @@ class LobbyGameInProgressState(State):
                     self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
+            self.players_who_quit.append(player_connection.player)
             self.lobby.current_players -= 1
 
             del self.lobby.player_connections[player_connection.player]
@@ -149,13 +195,7 @@ class LobbyGameInProgressState(State):
                 player_connection.channel_name
             )
 
-            if self.lobby.current_players == 0:
-                asyncio.create_task(self.lobby.auto_destruct())
-                return
+            asyncio.create_task(self.lobby.wait_for_player_to_rejoin(player_connection.player))
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
         return
-
-
-class LobbyGameOverState(LobbyWaitingState):
-    pass
