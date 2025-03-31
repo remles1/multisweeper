@@ -49,7 +49,7 @@
    ```sh
 	python manage.py runserver
    ```
-Database is required
+Database is required.
 Default credentials are inside manage.py file
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
