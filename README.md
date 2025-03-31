@@ -28,3 +28,28 @@
  Not an exhaustive list and more to come
 
 
+### Installation
+1. Clone the repo
+   ```sh
+   git clone https://github.com/remles1/multisweeper.git
+   ```
+2. cd
+   ```sh
+	cd multisweeper/
+   ```
+4. Make migrations
+   ```sh
+   python manage.py makemigrations
+   ```
+5. Migrate
+   ```sh
+	python manage.py migrate
+   ```
+6. Run dev server
+   ```sh
+	python manage.py runserver
+   ```
+Database is required
+Default credentials are inside manage.py file
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
