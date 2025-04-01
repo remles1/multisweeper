@@ -95,7 +95,7 @@ class LobbyWaitingState(State):
                 asyncio.create_task(self.lobby.lobby_destroyer.wait_for_players_to_join())
                 return
 
-    async def remove_player_without_connection(self, player: Union[User,str]):
+    async def remove_player_without_connection(self, player: Union[User, str]):
         async with self.lobby.lock:
             if type(self) is not type(
                     self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
