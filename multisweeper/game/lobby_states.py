@@ -95,32 +95,6 @@ class LobbyWaitingState(State):
                 asyncio.create_task(self.lobby.lobby_destroyer.wait_for_players_to_join())
                 return
 
-    async def remove_player_without_connection(self, player: Union[User, str]):
-        async with self.lobby.lock:
-            if type(self) is not type(
-                    self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
-                return
-
-            self.lobby.players.remove(player)
-            if self.lobby.current_players == 0:
-                self.lobby.owner = None
-            else:
-                if self.lobby.owner != self.lobby.players[0]:
-                    await self.lobby.chat_manager.send_server_message(
-                        f"{self.lobby.players[0]} is the owner of the lobby.")
-                self.lobby.owner = self.lobby.players[0]
-
-            self.lobby.seats = {k: (None if v is player else v) for k, v in self.lobby.seats.items()}
-
-            if isinstance(player, User):
-                del self.lobby.player_profiles[player]
-            del self.lobby.player_scores[player]
-            del self.lobby.player_bomb_used[player]
-
-            if self.lobby.current_players == 0:
-                asyncio.create_task(self.lobby.lobby_destroyer.wait_for_players_to_join())
-                return
-
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
         async with self.lobby.lock:
             if type(self) is not type(
@@ -161,9 +135,6 @@ class LobbyPlayerQuitState(State):
                     self.lobby.state):  # safeguard against race conditions if state changes mid websocket request
                 return
 
-            self.players_who_quit.remove(player_connection.player)
-            self.lobby.current_players += 1
-
             #  redirect is handled in the view, so I think its safe to delete that below
             if player_connection.player not in self.lobby.players:
                 asyncio.create_task(player_connection.send(text_data=json.dumps({
@@ -171,13 +142,20 @@ class LobbyPlayerQuitState(State):
                 })))
                 return
 
-            self.lobby.player_connections[player_connection.player] = player_connection
-            await self.lobby.channel_layer.group_add(
-                self.lobby.group_name,
-                player_connection.channel_name
-            )
+            if player_connection.player in self.players_who_quit:
+                self.players_who_quit.remove(player_connection.player)
+                self.lobby.current_players += 1
 
-            await self.lobby.broadcast(self.lobby.create_seats_json())
+                self.lobby.player_connections[player_connection.player] = player_connection
+                await self.lobby.channel_layer.group_add(
+                    self.lobby.group_name,
+                    player_connection.channel_name
+                )
+
+                print("bout to call player_rejoined")
+
+                await self.lobby.lobby_player_rejoin_watcher.player_rejoined(player_connection.player)
+                await self.lobby.broadcast(self.lobby.create_seats_json())
 
     async def remove_player(self, player_connection: 'PlayerConsumer'):
         async with self.lobby.lock:
@@ -195,7 +173,7 @@ class LobbyPlayerQuitState(State):
                 player_connection.channel_name
             )
 
-            asyncio.create_task(self.lobby.wait_for_player_to_rejoin(player_connection.player))
+            self.lobby.lobby_player_rejoin_watcher.add_player(player_connection.player)
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
         return

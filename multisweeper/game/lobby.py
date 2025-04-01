@@ -7,9 +7,11 @@ from typing import List, TYPE_CHECKING, Dict, Union
 from channels.layers import get_channel_layer
 from django.contrib.auth.models import User
 
+
 from multisweeper.game.chat_manager import ChatManager
 from multisweeper.game.game_logic import GameLogic
 from multisweeper.game.lobby_destroyer import LobbyDestroyer
+from multisweeper.game.lobby_player_rejoin_watcher import LobbyPlayerRejoinWatcher
 
 from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState, LobbyGameOverState, \
     LobbyPlayerQuitState
@@ -51,28 +53,46 @@ class Lobby:
         self.player_scores = {}
         self.mine_count = mine_count
         self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=mine_count)
+
         self.lock = asyncio.Lock()
         self.lobby_destroyer = LobbyDestroyer(self)
+        self.lobby_player_rejoin_watcher = LobbyPlayerRejoinWatcher(self)
 
         self.chat_manager = ChatManager(self)
 
         self.channel_layer = get_channel_layer()
         self.group_name = f'lobby_{self.lobby_id}'
 
-    async def wait_for_player_to_rejoin(self, player: Union[User | str]):
-        await asyncio.sleep(10)
-        if not isinstance(self.state, LobbyPlayerQuitState):
-            return
-        if player in self.state.players_who_quit:
-            await self.change_state(LobbyGameOverState(self))
-            await self.state.remove_player_without_connection(player)
-            await self.broadcast(self.create_seats_json())
-            # remove elo from player who quit if its ranked
+    async def _remove_player_without_connection(self, player: Union[User, str]):
+        async with self.lock:
 
-            await self.chat_manager.send_server_message(f"{player} failed to rejoin.")
+            self.players.remove(player)
+            if self.current_players == 0:
+                self.owner = None
+            else:
+                if self.owner != self.players[0]:
+                    await self.chat_manager.send_server_message(
+                        f"{self.players[0]} is the owner of the lobby.")
+                self.owner = self.players[0]
 
-        elif len(self.state.players_who_quit) == 0:
-            await self.change_state(LobbyGameInProgressState(self))
+            self.seats = {k: (None if v is player else v) for k, v in self.seats.items()}
+
+            if isinstance(player, User):
+                del self.player_profiles[player]
+            del self.player_scores[player]
+            del self.player_bomb_used[player]
+
+            if self.current_players == 0:
+                asyncio.create_task(self.lobby_destroyer.wait_for_players_to_join())
+                return
+
+    async def handle_players_failed_to_rejoin(self, failed_players: List[Union[User, str]]):
+        # TODO penalty for players who failed
+        print(f"failed_players: {failed_players}")
+        for player in failed_players:
+            await self._remove_player_without_connection(player)
+        await self.change_state(LobbyGameOverState(self))
+        await self.broadcast(self.create_seats_json())
 
     async def change_state(self, state: State):
         self.state = state
@@ -243,10 +263,10 @@ class Lobby:
 
     async def broadcast(self, content):
 
-        if isinstance(self.state, LobbyPlayerQuitState):
-            print(datetime.datetime.now(), ' ', self.state.players_who_quit)
-        else:
-            print(datetime.datetime.now(), ' ', self.player_scores, self.player_bomb_used, self.state)
+        # if isinstance(self.state, LobbyPlayerQuitState):
+        #     print(datetime.datetime.now(), ' ', self.state.players_who_quit)
+        # else:
+        print(datetime.datetime.now(), ' ', self.players, self.player_connections, self.state)
         await self.channel_layer.group_send(
             self.group_name,
             {
