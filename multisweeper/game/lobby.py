@@ -9,14 +9,15 @@ from django.contrib.auth.models import User
 
 from multisweeper.game.chat_manager import ChatManager
 from multisweeper.game.game_logic import GameLogic
+from multisweeper.game.lobbies_register import lobbies
+from multisweeper.game.lobby_destroyer import LobbyDestroyer
+
 from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState, LobbyGameOverState, \
     LobbyPlayerQuitState
 from multisweeper.models import PlayerProfile
 
 if TYPE_CHECKING:
     from multisweeper.consumers import PlayerConsumer
-
-lobbies = {}
 
 
 class Lobby:
@@ -52,15 +53,12 @@ class Lobby:
         self.mine_count = mine_count
         self.game_instance = GameLogic(difficulty='intermediate', width=16, height=16, mine_count=mine_count)
         self.lock = asyncio.Lock()
+        self.lobby_destroyer = LobbyDestroyer(self)
+
         self.chat_manager = ChatManager(self)
 
         self.channel_layer = get_channel_layer()
         self.group_name = f'lobby_{self.lobby_id}'
-
-    async def auto_destruct(self):
-        await asyncio.sleep(10)
-        if self.lobby_id in lobbies and self.current_players == 0:
-            del lobbies[self.lobby_id]
 
     async def wait_for_player_to_rejoin(self, player: Union[User | str]):
         await asyncio.sleep(10)
@@ -218,8 +216,8 @@ class Lobby:
     async def start_game(self, player_connection: 'PlayerConsumer'):
         async with self.lock:
             if player_connection.player == self.owner and (
-                not isinstance(self.state, LobbyGameInProgressState) and not isinstance(self.state,
-                                                                                       LobbyPlayerQuitState)):
+                    not isinstance(self.state, LobbyGameInProgressState) and not isinstance(self.state,
+                                                                                            LobbyPlayerQuitState)):
                 if len(self.players) == self.max_players and sum(
                         1 for value in self.seats.values() if value is None) == 0:
                     if isinstance(self.state, LobbyGameOverState):
@@ -239,7 +237,7 @@ class Lobby:
     async def promote_to_owner(self, player_connection: 'PlayerConsumer', seat: int):
         if player_connection.player == self.owner and self.seats[seat] is not None and (
                 not isinstance(self.state, LobbyGameInProgressState) and not isinstance(self.state,
-                                                                                       LobbyPlayerQuitState)):
+                                                                                        LobbyPlayerQuitState)):
             self.owner = self.seats[seat]
         await self.broadcast(self.create_seats_json())
         await self.chat_manager.send_server_message(f"{self.seats[seat]} is the owner of the lobby.")

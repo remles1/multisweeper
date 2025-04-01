@@ -92,7 +92,7 @@ class LobbyWaitingState(State):
                 player_connection.channel_name
             )
             if self.lobby.current_players == 0:
-                asyncio.create_task(self.lobby.auto_destruct())
+                asyncio.create_task(self.lobby.lobby_destroyer.wait_for_players_to_join())
                 return
 
     async def remove_player_without_connection(self, player: Union[User,str]):
@@ -118,7 +118,7 @@ class LobbyWaitingState(State):
             del self.lobby.player_bomb_used[player]
 
             if self.lobby.current_players == 0:
-                asyncio.create_task(self.lobby.auto_destruct())
+                asyncio.create_task(self.lobby.lobby_destroyer.wait_for_players_to_join())
                 return
 
     async def choose_seat(self, player_connection: 'PlayerConsumer', seat_number):
