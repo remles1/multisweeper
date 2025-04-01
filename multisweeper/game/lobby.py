@@ -314,7 +314,7 @@ class Lobby:
             else:
                 temp_seats[seat] = player
                 if player is not None:
-                    temp_scores[seat] = self.player_scores[player]
+                    temp_scores[seat] = self.player_scores[player]  # for example this fails when player quits during execution
                     temp_elo[seat] = '--GUEST--'
                 else:
                     temp_elo[seat] = None
