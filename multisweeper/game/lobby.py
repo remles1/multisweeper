@@ -298,6 +298,7 @@ class Lobby:
         return content
 
     def create_seats_json(self):
+        # TODO player_scores can be deleted during this functions execution. Handle it
         temp_seats = {}
         temp_scores = {}
         temp_elo = {}
