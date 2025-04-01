@@ -7,7 +7,6 @@ if TYPE_CHECKING:
     from multisweeper.game.lobby import Lobby
 
 
-
 class LobbyDestroyer:
     def __init__(self, lobby: "Lobby"):
         self.lobby = lobby
@@ -25,5 +24,3 @@ class LobbyDestroyer:
             print("destroyed")
 
         self.running = False
-
-
