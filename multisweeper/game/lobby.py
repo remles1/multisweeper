@@ -9,7 +9,6 @@ from django.contrib.auth.models import User
 
 from multisweeper.game.chat_manager import ChatManager
 from multisweeper.game.game_logic import GameLogic
-from multisweeper.game.lobbies_register import lobbies
 from multisweeper.game.lobby_destroyer import LobbyDestroyer
 
 from multisweeper.game.lobby_states import State, LobbyWaitingState, LobbyGameInProgressState, LobbyGameOverState, \

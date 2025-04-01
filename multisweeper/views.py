@@ -5,7 +5,8 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect
 
 from multisweeper.forms import LobbySettingsForm
-from multisweeper.game.lobby import lobbies, Lobby
+from multisweeper.game.lobbies_register import lobbies
+from multisweeper.game.lobby import  Lobby
 from multisweeper.game.lobby_states import LobbyGameInProgressState, LobbyPlayerQuitState
 from multisweeper.utils.utils import username_in_player_list
 
