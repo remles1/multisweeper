@@ -78,7 +78,7 @@ class LobbyWaitingState(State):
                         f"{self.lobby.players[0]} is the owner of the lobby.")
                 self.lobby.owner = self.lobby.players[0]
 
-            self.lobby.seats = {k: (None if v is player_connection.player else v) for k, v in self.lobby.seats.items()}
+            self.lobby.seats = {k: (None if v == player_connection.player else v) for k, v in self.lobby.seats.items()}
 
             del self.lobby.player_connections[player_connection.player]
 
@@ -102,7 +102,7 @@ class LobbyWaitingState(State):
                 return
 
             if self.lobby.seats[seat_number] is None:
-                self.lobby.seats = {k: (None if v is player_connection.player else v) for k, v in
+                self.lobby.seats = {k: (None if v == player_connection.player else v) for k, v in
                                     self.lobby.seats.items()}
                 self.lobby.seats[seat_number] = player_connection.player
 
