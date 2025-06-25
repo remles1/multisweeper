@@ -75,7 +75,7 @@ class Lobby:
                         f"{self.players[0]} is the owner of the lobby.")
                 self.owner = self.players[0]
 
-            self.seats = {k: (None if v is player else v) for k, v in self.seats.items()}
+            self.seats = {k: (None if v == player else v) for k, v in self.seats.items()}
 
             if isinstance(player, User):
                 del self.player_profiles[player]
@@ -298,7 +298,6 @@ class Lobby:
         return content
 
     def create_seats_json(self):
-        # TODO player_scores can be deleted during this functions execution. Handle it
         temp_seats = {}
         temp_scores = {}
         temp_elo = {}
@@ -314,7 +313,7 @@ class Lobby:
             else:
                 temp_seats[seat] = player
                 if player is not None:
-                    temp_scores[seat] = self.player_scores[player]  # for example this fails when player quits during execution
+                    temp_scores[seat] = self.player_scores[player]
                     temp_elo[seat] = '--GUEST--'
                 else:
                     temp_elo[seat] = None
